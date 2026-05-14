@@ -10,11 +10,18 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f0f4f8;
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     min-height: 100vh;
     padding: 40px 16px;
+    gap: 0;
+  }
+  .preview-row {
+    display: flex;
+    align-items: flex-start;
     gap: 40px;
+    justify-content: center;
+    width: 100%;
   }
 
   /* ── Phone frame ── */
@@ -386,9 +393,72 @@
   }
   .sw-btn:hover { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
   .sw-btn.active { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
+
+  /* ── Dev Handoff section ──────────────────────────────────── */
+  .handoff {
+    width: 100%;
+    max-width: 670px;
+    margin-top: 48px;
+    padding-bottom: 56px;
+  }
+  .handoff-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #66727d;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #d1d8e0;
+    margin-bottom: 16px;
+  }
+  .comp-cards { display: flex; flex-direction: column; gap: 12px; }
+  .comp-card {
+    background: #fff;
+    border: 1px solid #e0e7ef;
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .comp-name { font-size: 15px; font-weight: 700; color: #141c22; margin-bottom: 2px; }
+  .comp-path { font-size: 12px; color: #9aa5ae; margin-bottom: 12px; font-family: 'SF Mono', monospace; }
+  .import-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #f4f8fb; border: 1px solid #e0e7ef;
+    border-radius: 8px; padding: 10px 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px; color: #384550;
+    cursor: pointer; margin-bottom: 16px;
+    transition: border-color .15s, background .15s;
+  }
+  .import-row:hover { border-color: #0069f1; background: #eef4ff; }
+  .import-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .import-row svg { width: 14px; height: 14px; flex-shrink: 0; color: #9aa5ae; transition: color .15s; }
+  .import-row:hover svg { color: #0069f1; }
+  .props-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .props-table th {
+    text-align: left; padding: 6px 10px;
+    font-size: 11px; font-weight: 600; color: #66727d;
+    border-bottom: 1px solid #e0e7ef;
+    text-transform: uppercase; letter-spacing: .04em;
+    background: #f7f9fb;
+  }
+  .props-table th:first-child { border-radius: 6px 0 0 0; }
+  .props-table th:last-child  { border-radius: 0 6px 0 0; }
+  .props-table td { padding: 8px 10px; color: #384550; border-bottom: 1px solid #f0f4f8; vertical-align: top; line-height: 1.4; }
+  .props-table tr:last-child td { border-bottom: none; }
+  .prop-name    { font-family: 'SF Mono', monospace; color: #0069f1; font-weight: 600; white-space: nowrap; }
+  .prop-type    { font-family: 'SF Mono', monospace; color: #384550; font-size: 11.5px; }
+  .prop-default { font-family: 'SF Mono', monospace; color: #66727d; font-size: 11.5px; white-space: nowrap; }
+  .copy-toast-pi {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: #141c22; color: #fff;
+    font-size: 13px; padding: 8px 16px;
+    border-radius: 20px; opacity: 0; pointer-events: none;
+    transition: opacity 200ms, transform 200ms; z-index: 1000;
+  }
+  .copy-toast-pi.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
+
+<div class="preview-row">
 
 <!-- ───────────────────────── Phone ───────────────────────────── -->
 <div class="phone">
@@ -692,6 +762,63 @@
   </div>
 </aside>
 
+</div><!-- /preview-row -->
+
+<!-- ───────────────────── Dev Handoff ─────────────────────────── -->
+<section class="handoff">
+  <div class="handoff-header">Dev Handoff — Componentes</div>
+  <div class="comp-cards">
+
+    <!-- PersonalInfoFlow -->
+    <div class="comp-card">
+      <div class="comp-name">PersonalInfoFlow</div>
+      <div class="comp-path">packages/react/src/components/flows/PersonalInfoFlow</div>
+      <div class="import-row" onclick="piCopy(&quot;import { PersonalInfoFlow } from '@kueski/react';&quot;)">
+        <span>import { PersonalInfoFlow } from '@kueski/react';</span>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M5 13H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v1" stroke-linecap="round"/></svg>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="prop-name">$step</td><td class="prop-type">number</td><td class="prop-default">2</td><td>Step number shown in header</td></tr>
+          <tr><td class="prop-name">$totalSteps</td><td class="prop-type">number</td><td class="prop-default">5</td><td>Total steps shown in header</td></tr>
+          <tr><td class="prop-name">onSubmit</td><td class="prop-type">(data: PersonalInfoData) =&gt; void</td><td class="prop-default">—</td><td>Fires on Continuar — host should trigger the CURP lookup here</td></tr>
+          <tr><td class="prop-name">onConfirmCurp</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires when user taps Confirmar on the error sheet</td></tr>
+          <tr><td class="prop-name">onLoginRedirect</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires when user taps "inicia sesión" in the CURP error message</td></tr>
+          <tr><td class="prop-name">onBack</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Back button on the form screen</td></tr>
+          <tr><td class="prop-name">onClose</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Close (×) button on the form screen</td></tr>
+          <tr><td class="prop-name">$autoAdvanceDemo</td><td class="prop-type">boolean</td><td class="prop-default">true</td><td>Auto-advances loading → error after 1.8s. Set false to control state externally</td></tr>
+          <tr><td class="prop-name">$mockCurp</td><td class="prop-type">string</td><td class="prop-default">'RIVA831125MCHLRS09'</td><td>CURP shown in the error sheet (replaced by API response in production)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- CurpConfirmationSheet -->
+    <div class="comp-card">
+      <div class="comp-name">CurpConfirmationSheet</div>
+      <div class="comp-path">packages/react/src/components/flows/PersonalInfoFlow/CurpConfirmationSheet</div>
+      <div class="import-row" onclick="piCopy(&quot;import { CurpConfirmationSheet } from '@kueski/react';&quot;)">
+        <span>import { CurpConfirmationSheet } from '@kueski/react';</span>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M5 13H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v1" stroke-linecap="round"/></svg>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="prop-name">$visible</td><td class="prop-type">boolean</td><td class="prop-default">false</td><td>Shows or hides the sheet with animation</td></tr>
+          <tr><td class="prop-name">$state</td><td class="prop-type">'loading' | 'error'</td><td class="prop-default">'loading'</td><td>loading = spinner + buttons disabled. error = CURP field + red border + active buttons</td></tr>
+          <tr><td class="prop-name">$curp</td><td class="prop-type">string</td><td class="prop-default">''</td><td>CURP string shown in the read-only field</td></tr>
+          <tr><td class="prop-name">$curpMaxLength</td><td class="prop-type">number</td><td class="prop-default">18</td><td>Character limit shown in the counter</td></tr>
+          <tr><td class="prop-name">$errorMessage</td><td class="prop-type">React.ReactNode</td><td class="prop-default">—</td><td>Error text below the CURP field — accepts JSX for inline links (e.g. "inicia sesión")</td></tr>
+          <tr><td class="prop-name">onBack</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Atrás button and scrim tap (only active when not loading)</td></tr>
+          <tr><td class="prop-name">onConfirm</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Confirmar button</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+<div id="pi-copy-toast" class="copy-toast-pi">Copiado al portapapeles</div>
+
 <script>
   let currentState = 'form';
   let loadingTimer = null;
@@ -758,6 +885,19 @@
   function toggleLoginPassword() {
     const input = document.getElementById('l-password');
     input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  // Copy to clipboard (handoff section)
+  function piCopy(text) {
+    navigator.clipboard.writeText(text).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    const toast = document.getElementById('pi-copy-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
   }
 </script>
 </body>

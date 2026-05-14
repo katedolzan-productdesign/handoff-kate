@@ -11,10 +11,11 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f0f4f8;
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     min-height: 100vh;
     padding: 40px 16px;
+    gap: 0;
   }
 
   /* ── Phone frame ─────────────────────────────────────────────── */
@@ -394,6 +395,80 @@
   .step-dot.active { background: #0069f1; }
 
   @media (max-width: 720px) { .info-bar { display: none; } }
+
+  /* ── Dev Handoff section ──────────────────────────────────── */
+  .handoff {
+    width: 100%;
+    max-width: 670px;
+    margin-top: 48px;
+    padding-bottom: 56px;
+  }
+  .handoff-header {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #66727d;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #d1d8e0;
+    margin-bottom: 16px;
+  }
+  .comp-cards { display: flex; flex-direction: column; gap: 12px; }
+  .comp-card {
+    background: #fff;
+    border: 1px solid #e0e7ef;
+    border-radius: 12px;
+    padding: 18px;
+  }
+  .comp-name { font-size: 15px; font-weight: 700; color: #141c22; margin-bottom: 2px; }
+  .comp-path { font-size: 12px; color: #9aa5ae; margin-bottom: 12px; font-family: 'SF Mono', monospace; }
+  .import-row {
+    display: flex; align-items: center; gap: 8px;
+    background: #f4f8fb; border: 1px solid #e0e7ef;
+    border-radius: 8px; padding: 10px 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px; color: #384550;
+    cursor: pointer; margin-bottom: 16px;
+    transition: border-color .15s, background .15s;
+  }
+  .import-row:hover { border-color: #0069f1; background: #eef4ff; }
+  .import-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .import-row svg { width: 14px; height: 14px; flex-shrink: 0; color: #9aa5ae; transition: color .15s; }
+  .import-row:hover svg { color: #0069f1; }
+  .props-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .props-table th {
+    text-align: left; padding: 6px 10px;
+    font-size: 11px; font-weight: 600; color: #66727d;
+    border-bottom: 1px solid #e0e7ef;
+    text-transform: uppercase; letter-spacing: .04em;
+    background: #f7f9fb;
+  }
+  .props-table th:first-child { border-radius: 6px 0 0 0; }
+  .props-table th:last-child  { border-radius: 0 6px 0 0; }
+  .props-table td { padding: 8px 10px; color: #384550; border-bottom: 1px solid #f0f4f8; vertical-align: top; line-height: 1.4; }
+  .props-table tr:last-child td { border-bottom: none; }
+  .prop-name    { font-family: 'SF Mono', monospace; color: #0069f1; font-weight: 600; white-space: nowrap; }
+  .prop-type    { font-family: 'SF Mono', monospace; color: #384550; font-size: 11.5px; }
+  .prop-default { font-family: 'SF Mono', monospace; color: #66727d; font-size: 11.5px; white-space: nowrap; }
+  .screens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+    margin-top: 0;
+  }
+  .screen-chip {
+    background: #f7f9fb; border: 1px solid #e0e7ef;
+    border-radius: 8px; padding: 10px 12px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .screen-chip-name { font-size: 13px; font-weight: 600; color: #141c22; }
+  .screen-chip-path { font-size: 11px; color: #9aa5ae; font-family: 'SF Mono', monospace; }
+  .copy-toast-lf {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: #141c22; color: #fff;
+    font-size: 13px; padding: 8px 16px;
+    border-radius: 20px; opacity: 0; pointer-events: none;
+    transition: opacity 200ms, transform 200ms; z-index: 1000;
+  }
+  .copy-toast-lf.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -739,6 +814,58 @@
   </div>
 </div>
 
+<!-- ───────────────────────── Dev Handoff ─────────────────────────── -->
+<section class="handoff">
+  <div class="handoff-header">Dev Handoff — Componentes</div>
+  <div class="comp-cards">
+
+    <!-- LoginFlow -->
+    <div class="comp-card">
+      <div class="comp-name">LoginFlow</div>
+      <div class="comp-path">packages/react/src/components/flows/LoginFlow</div>
+      <div class="import-row" onclick="lfCopy(&quot;import { LoginFlow } from '@kueski/react';&quot;)">
+        <span>import { LoginFlow } from '@kueski/react';</span>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M5 13H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v1" stroke-linecap="round"/></svg>
+      </div>
+      <table class="props-table">
+        <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="prop-name">onLoginSuccess</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires after the biometrics success screen — navigate to home</td></tr>
+          <tr><td class="prop-name">onForgotPassword</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires when user taps "Olvidé mi contraseña"</td></tr>
+          <tr><td class="prop-name">onBiometricDecline</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires when user taps "Ahora no" on the biometrics prompt</td></tr>
+          <tr><td class="prop-name">onClose</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Close (×) button on the login screen</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Individual screens -->
+    <div class="comp-card">
+      <div class="comp-name">Screens individuales</div>
+      <div class="comp-path" style="margin-bottom:14px;">Usados internamente por LoginFlow — importar sólo si se necesita control granular</div>
+      <div class="screens-grid">
+        <div class="screen-chip">
+          <div class="screen-chip-name">LoginScreen</div>
+          <div class="screen-chip-path">flows/LoginFlow/LoginScreen</div>
+        </div>
+        <div class="screen-chip">
+          <div class="screen-chip-name">BiometricsScreen</div>
+          <div class="screen-chip-path">flows/LoginFlow/BiometricsScreen</div>
+        </div>
+        <div class="screen-chip">
+          <div class="screen-chip-name">BiometricsSystemPromptScreen</div>
+          <div class="screen-chip-path">flows/LoginFlow/BiometricsSystemPromptScreen</div>
+        </div>
+        <div class="screen-chip">
+          <div class="screen-chip-name">BiometricsSuccessScreen</div>
+          <div class="screen-chip-path">flows/LoginFlow/BiometricsSuccessScreen</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<div id="lf-copy-toast" class="copy-toast-lf">Copiado al portapapeles</div>
+
 <script>
   var HINTS = [
     'Tap <strong>Iniciar sesión</strong> to begin →',
@@ -809,6 +936,18 @@
 
   // Initialise sidebar on load
   updateSidebar('login');
+
+  function lfCopy(text) {
+    navigator.clipboard.writeText(text).catch(function() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    var toast = document.getElementById('lf-copy-toast');
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2000);
+  }
 </script>
 </body>
 </html>

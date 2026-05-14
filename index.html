@@ -8,724 +8,281 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
-  /* ─────────────────────────────────────────────────────────
-     FLOW REGISTRY  ← only edit this section to add new flows
-     ───────────────────────────────────────────────────────── */
-  /*
-    FLOWS is defined in the <script> block below.
-    Search for "const FLOWS" to find it.
-  */
-
-  /* ── Reset ───────────────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── Tokens ──────────────────────────────────────────────── */
   :root {
     --brand:        #0069f1;
-    --brand-light:  #e6f0ff;
+    --brand-light:  #eef4ff;
     --brand-dark:   #0058cc;
     --success:      #008246;
-    --success-light:#e6f5ee;
+    --success-bg:   #e6f5ee;
     --warn:         #b45309;
-    --warn-light:   #fef3c7;
+    --warn-bg:      #fef3c7;
     --gray-50:      #f7f9fb;
     --gray-100:     #f0f4f8;
     --gray-200:     #e0e7ef;
-    --gray-400:     #9aaab8;
+    --gray-400:     #9aa5ae;
     --gray-600:     #66727d;
     --gray-800:     #384550;
-    --gray-900:     #202124;
-    --surface:      #ffffff;
-    --sidebar-w:    268px;
-    --radius:       12px;
-    --font:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --gray-900:     #141c22;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --radius: 14px;
   }
 
-  /* ── Base ────────────────────────────────────────────────── */
-  html, body { height: 100%; overflow: hidden; }
-  body {
+  html, body {
+    height: 100%;
     font-family: var(--font);
     font-size: 14px;
     color: var(--gray-900);
     background: var(--gray-100);
-    display: flex;
   }
 
-  /* ─────────────────────────────────────────────────────────
-     SIDEBAR
-     ───────────────────────────────────────────────────────── */
-  .sidebar {
-    width: var(--sidebar-w);
-    flex-shrink: 0;
-    background: var(--surface);
-    border-right: 1px solid var(--gray-200);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
+  /* ── Page layout ──────────────────────────────────────────── */
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
   }
 
-  /* Logo */
-  .sidebar-logo {
+  /* ── Header ──────────────────────────────────────────────── */
+  .page-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 20px 18px 16px;
-    border-bottom: 1px solid var(--gray-200);
-    flex-shrink: 0;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    gap: 16px;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
   .logo-mark {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #25A2FA 0%, #0075FF 48%, #3F58EA 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
   }
-  .logo-mark svg { width: 18px; height: 18px; }
-  .logo-text {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-  }
-  .logo-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--gray-900);
-    line-height: 1.2;
-    letter-spacing: -0.3px;
-  }
-  .logo-sub {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--gray-600);
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-  }
+  .logo-mark svg { width: 20px; height: 20px; }
+  .logo-labels { display: flex; flex-direction: column; gap: 1px; }
+  .logo-name { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; color: var(--gray-900); }
+  .logo-sub  { font-size: 12px; color: var(--gray-600); font-weight: 500; }
 
-  /* Search */
-  .sidebar-search {
-    padding: 12px 14px 8px;
-    flex-shrink: 0;
-  }
   .search-wrap {
     position: relative;
+    flex: 1;
+    max-width: 280px;
   }
   .search-wrap svg {
-    position: absolute;
-    left: 10px;
-    top: 50%;
+    position: absolute; left: 11px; top: 50%;
     transform: translateY(-50%);
+    width: 15px; height: 15px;
     color: var(--gray-400);
-    width: 15px;
-    height: 15px;
     pointer-events: none;
   }
   .search-input {
     width: 100%;
-    padding: 8px 10px 8px 32px;
-    border: 1px solid var(--gray-200);
-    border-radius: 8px;
+    padding: 9px 12px 9px 34px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
     font-family: var(--font);
     font-size: 13px;
     color: var(--gray-900);
-    background: var(--gray-50);
+    background: #fff;
     outline: none;
     transition: border-color 150ms;
   }
-  .search-input:focus { border-color: var(--brand); background: #fff; }
+  .search-input:focus { border-color: var(--brand); }
   .search-input::placeholder { color: var(--gray-400); }
 
-  /* Flow list */
-  .sidebar-label {
-    padding: 8px 18px 4px;
+  /* ── Section heading ──────────────────────────────────────── */
+  .section-label {
     font-size: 11px;
-    font-weight: 600;
-    color: var(--gray-400);
-    letter-spacing: 0.6px;
+    font-weight: 700;
     text-transform: uppercase;
-    flex-shrink: 0;
+    letter-spacing: 0.6px;
+    color: var(--gray-400);
+    margin-bottom: 14px;
   }
-  .flow-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 4px 8px 12px;
+
+  /* ── Flow grid ────────────────────────────────────────────── */
+  .flow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 14px;
   }
-  .flow-list::-webkit-scrollbar { width: 4px; }
-  .flow-list::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 2px; }
 
   .flow-card {
-    padding: 12px 12px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 120ms;
-    border: 1.5px solid transparent;
-    margin-bottom: 3px;
-  }
-  .flow-card:hover { background: var(--gray-50); }
-  .flow-card.active {
-    background: var(--brand-light);
-    border-color: rgba(0, 105, 241, 0.2);
-  }
-  .flow-card-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gray-900);
-    margin-bottom: 3px;
+    background: #fff;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 22px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 150ms, box-shadow 150ms;
+    text-decoration: none;
+    color: inherit;
+  }
+  .flow-card:hover {
+    border-color: rgba(0, 105, 241, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 105, 241, 0.08);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 6px;
+    gap: 12px;
   }
-  .flow-card.active .flow-card-title { color: var(--brand-dark); }
-  .flow-card-desc {
-    font-size: 12px;
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+  }
+  .card-desc {
+    font-size: 13px;
     color: var(--gray-600);
-    line-height: 1.45;
-    margin-bottom: 8px;
+    line-height: 1.55;
   }
-  .flow-card-meta {
+  .card-meta {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
   }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--gray-100);
+  }
+  .card-steps {
+    font-size: 12px;
+    color: var(--gray-400);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .card-steps svg { width: 13px; height: 13px; }
+  .card-cta {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--brand);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: gap 120ms;
+  }
+  .flow-card:hover .card-cta { gap: 7px; }
+  .card-cta svg { width: 14px; height: 14px; }
 
-  /* Tags & badges */
+  /* Badges */
   .badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 7px;
+    padding: 3px 8px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 500;
     line-height: 1.6;
   }
-  .badge-ready   { background: var(--success-light); color: var(--success); }
-  .badge-draft   { background: var(--gray-100);      color: var(--gray-600); }
-  .badge-wip     { background: var(--warn-light);    color: var(--warn); }
-  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-
+  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .badge-ready { background: var(--success-bg); color: var(--success); }
+  .badge-draft { background: var(--gray-100);   color: var(--gray-600); }
+  .badge-wip   { background: var(--warn-bg);    color: var(--warn); }
   .tag {
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 11.5px;
     font-weight: 500;
     background: var(--gray-100);
     color: var(--gray-600);
   }
 
   /* Empty state */
-  .no-results {
-    padding: 20px 12px;
+  .empty-state {
     text-align: center;
+    padding: 60px 20px;
     color: var(--gray-400);
-    font-size: 13px;
+    font-size: 14px;
     display: none;
+    grid-column: 1 / -1;
   }
 
-  /* Sidebar footer */
-  .sidebar-footer {
-    border-top: 1px solid var(--gray-200);
-    padding: 12px 14px;
-    flex-shrink: 0;
-  }
-  .add-hint {
-    font-size: 12px;
+  /* ── Footer hint ──────────────────────────────────────────── */
+  .page-footer {
+    margin-top: 40px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 13px;
     color: var(--gray-600);
-    line-height: 1.5;
+    line-height: 1.6;
   }
-  .add-hint code {
+  .page-footer code {
     font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 11px;
+    font-size: 12px;
     background: var(--gray-100);
-    padding: 1px 4px;
+    padding: 1px 5px;
     border-radius: 4px;
     color: var(--gray-800);
-  }
-
-  /* ─────────────────────────────────────────────────────────
-     MAIN CONTENT
-     ───────────────────────────────────────────────────────── */
-  .main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 0;
-  }
-
-  /* Top bar */
-  .topbar {
-    height: 56px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--gray-200);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  }
-  .topbar-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--gray-900);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .topbar-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    border-radius: 8px;
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    transition: background 120ms;
-    text-decoration: none;
-  }
-  .btn svg { width: 15px; height: 15px; }
-  .btn-ghost {
-    background: transparent;
-    color: var(--gray-800);
-    border: 1px solid var(--gray-200);
-  }
-  .btn-ghost:hover { background: var(--gray-50); }
-  .btn-primary { background: var(--brand); color: #fff; }
-  .btn-primary:hover { background: var(--brand-dark); }
-
-  /* Content body */
-  .content-body {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
-  }
-
-  /* Phone column */
-  .phone-col {
-    flex-shrink: 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 28px 20px 28px 28px;
-    overflow: hidden;
-  }
-  .phone-wrap {
-    /* Clip the scaled phone so no overflow bleeds out */
-    width:  347px;  /* 416 × 0.835 */
-    height: 728px;  /* 872 × 0.835 */
-    overflow: hidden;
-    flex-shrink: 0;
-    position: relative;
-  }
-  .phone-shell {
-    width: 416px;   /* 390 + 2×13 padding */
-    height: 872px;  /* 844 + 2×14 padding */
-    background: #1a1a1a;
-    border-radius: 52px;
-    padding: 13px 13px 14px;
-    box-shadow:
-      0 32px 80px rgba(0,0,0,.32),
-      0 0 0 1px rgba(255,255,255,.07),
-      inset 0 0 0 1px rgba(255,255,255,.04);
-    transform: scale(0.835);
-    transform-origin: top left;
-    position: absolute;
-    top: 0; left: 0;
-  }
-  /* Side buttons */
-  .phone-shell::before {
-    content: '';
-    position: absolute;
-    left: -3px; top: 110px;
-    width: 3px; height: 34px;
-    background: #2a2a2a;
-    border-radius: 2px 0 0 2px;
-    box-shadow: 0 44px 0 #2a2a2a, 0 80px 0 #2a2a2a;
-  }
-  .phone-shell::after {
-    content: '';
-    position: absolute;
-    right: -3px; top: 150px;
-    width: 3px; height: 56px;
-    background: #2a2a2a;
-    border-radius: 0 2px 2px 0;
-  }
-  .phone-screen {
-    width: 100%;
-    height: 100%;
-    border-radius: 40px;
-    overflow: hidden;
-    background: #fff;
-    position: relative;
-  }
-  .phone-screen iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-  }
-
-  /* ── Info panel ──────────────────────────────────────────── */
-  .info-panel {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 28px 28px 28px 8px;
-    overflow-y: auto;
-    gap: 0;
-  }
-  .info-panel::-webkit-scrollbar { width: 4px; }
-  .info-panel::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 2px; }
-
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--gray-200);
-    margin-bottom: 24px;
-    flex-shrink: 0;
-  }
-  .tab-btn {
-    padding: 8px 16px 10px;
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--gray-600);
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    margin-bottom: -1px;
-    transition: color 120ms, border-color 120ms;
-  }
-  .tab-btn:hover { color: var(--gray-900); }
-  .tab-btn.active { color: var(--brand); border-bottom-color: var(--brand); }
-
-  .tab-pane { display: none; flex-direction: column; gap: 20px; }
-  .tab-pane.active { display: flex; }
-
-  /* Section card */
-  .info-card {
-    background: var(--surface);
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius);
-    padding: 18px;
-  }
-  .info-card-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gray-400);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-
-  /* Overview */
-  .flow-desc-text {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--gray-800);
-  }
-  .meta-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  /* Steps */
-  .steps-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  .step-item {
-    display: flex;
-    gap: 14px;
-    position: relative;
-  }
-  .step-item:not(:last-child) .step-line {
-    position: absolute;
-    left: 14px;
-    top: 30px;
-    bottom: 0;
-    width: 1px;
-    background: var(--gray-200);
-  }
-  .step-num {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--brand-light);
-    color: var(--brand);
-    font-size: 12px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-    position: relative;
-    z-index: 1;
-  }
-  .step-body {
-    padding-bottom: 20px;
-    flex: 1;
-  }
-  .step-item:last-child .step-body { padding-bottom: 0; }
-  .step-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--gray-900);
-    margin-bottom: 3px;
-  }
-  .step-desc {
-    font-size: 13px;
-    color: var(--gray-600);
-    line-height: 1.5;
-  }
-
-  /* Components */
-  .component-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .component-row + .component-row {
-    padding-top: 14px;
-    border-top: 1px solid var(--gray-100);
-  }
-  .component-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gray-900);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .component-path {
-    font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
-    font-size: 11.5px;
-    color: var(--gray-600);
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
-    border-radius: 6px;
-    padding: 7px 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    cursor: pointer;
-    transition: border-color 120ms, background 120ms;
-  }
-  .component-path:hover { border-color: var(--brand); background: var(--brand-light); }
-  .component-path:hover .copy-icon { color: var(--brand); }
-  .copy-icon { color: var(--gray-400); flex-shrink: 0; width: 14px; height: 14px; }
-  .component-path-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-  .copy-toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(8px);
-    background: var(--gray-900);
-    color: #fff;
-    font-size: 13px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 200ms, transform 200ms;
-    z-index: 1000;
-  }
-  .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* Empty / loading state */
-  .empty-pane {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--gray-400);
-    font-size: 14px;
-  }
-
-  /* ── Responsive: narrow viewport ─────────────────────────── */
-  @media (max-width: 1100px) {
-    .info-panel { display: none; }
-  }
-  @media (max-width: 820px) {
-    .phone-col { display: none; }
   }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════════════
-  SIDEBAR
-═══════════════════════════════════════════════════════════════ -->
-<aside class="sidebar">
+<div class="page">
 
-  <!-- Logo -->
-  <div class="sidebar-logo">
-    <div class="logo-mark">
-      <!-- Kueski K icon (simplified) -->
-      <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M3 2.5h3v5.2L12.5 2.5H16l-7 6 7 7h-3.5L6 10.3V15.5H3V2.5Z" fill="white"/>
-      </svg>
+  <!-- Header -->
+  <header class="page-header">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 2.5h3v5.2L12.5 2.5H16l-7 6 7 7h-3.5L6 10.3V15.5H3V2.5Z" fill="white"/>
+        </svg>
+      </div>
+      <div class="logo-labels">
+        <div class="logo-name">kueski</div>
+        <div class="logo-sub">Flow Handoff</div>
+      </div>
     </div>
-    <div class="logo-text">
-      <div class="logo-name">kueski</div>
-      <div class="logo-sub">Flow Handoff</div>
-    </div>
-  </div>
 
-  <!-- Search -->
-  <div class="sidebar-search">
     <div class="search-wrap">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
         <circle cx="8.5" cy="8.5" r="5.5"/><path d="m13.5 13.5 3 3" stroke-linecap="round"/>
       </svg>
-      <input
-        type="search"
-        class="search-input"
-        placeholder="Buscar flow…"
-        id="searchInput"
-        autocomplete="off"
-        spellcheck="false"
-      />
+      <input type="search" class="search-input" id="searchInput" placeholder="Buscar flow…" autocomplete="off" spellcheck="false" />
     </div>
-  </div>
+  </header>
 
-  <!-- Section label -->
-  <div class="sidebar-label">Flows</div>
-
-  <!-- Flow list (rendered by JS) -->
-  <div class="flow-list" id="flowList">
-    <div class="no-results" id="noResults">Sin resultados</div>
+  <!-- Flow grid -->
+  <div class="section-label">Flows</div>
+  <div class="flow-grid" id="flowGrid">
+    <div class="empty-state" id="emptyState">Sin resultados para tu búsqueda.</div>
   </div>
 
   <!-- Footer -->
-  <div class="sidebar-footer">
-    <div class="add-hint">
-      Agrega flows editando <code>FLOWS</code> en <code>index.html</code> y colocando el preview en <code>flows/</code>.
-    </div>
+  <div class="page-footer">
+    Para agregar un flow: coloca el preview en <code>flows/</code> y añade una entrada al array <code>FLOWS</code> en <code>index.html</code>.
   </div>
 
-</aside>
+</div>
 
-<!-- ════════════════════════════════════════════════════════════
-  MAIN
-═══════════════════════════════════════════════════════════════ -->
-<div class="main">
-
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="topbar-title" id="topbarTitle">
-      <span id="topbarFlowName">Selecciona un flow</span>
-      <span id="topbarBadge"></span>
-    </div>
-    <div class="topbar-actions">
-      <a class="btn btn-ghost" id="openTabBtn" href="#" target="_blank" rel="noopener">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
-          <path d="M11 3h6v6M17 3l-8 8M8 5H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Abrir en nueva pestaña
-      </a>
-    </div>
-  </div>
-
-  <!-- Body -->
-  <div class="content-body">
-
-    <!-- Phone preview -->
-    <div class="phone-col">
-      <div class="phone-wrap">
-        <div class="phone-shell">
-          <div class="phone-screen">
-            <iframe id="flowFrame" src="" title="Flow preview" allow="same-origin"></iframe>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Info panel -->
-    <div class="info-panel" id="infoPanel">
-
-      <!-- Tabs -->
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="overview">Descripción</button>
-        <button class="tab-btn" data-tab="steps">Estados</button>
-        <button class="tab-btn" data-tab="components">Componentes</button>
-      </div>
-
-      <!-- Overview -->
-      <div class="tab-pane active" id="pane-overview">
-        <div class="info-card">
-          <div class="info-card-title">Acerca de este flow</div>
-          <p class="flow-desc-text" id="flowDesc">—</p>
-        </div>
-        <div class="info-card">
-          <div class="info-card-title">Metadata</div>
-          <div class="meta-row" id="flowMeta"></div>
-        </div>
-      </div>
-
-      <!-- Steps -->
-      <div class="tab-pane" id="pane-steps">
-        <div class="info-card">
-          <div class="info-card-title">Estados del flow</div>
-          <div class="steps-list" id="stepsList"></div>
-        </div>
-      </div>
-
-      <!-- Components -->
-      <div class="tab-pane" id="pane-components">
-        <div class="info-card">
-          <div class="info-card-title">Componentes React</div>
-          <div id="componentsList"></div>
-        </div>
-      </div>
-
-    </div><!-- /info-panel -->
-
-  </div><!-- /content-body -->
-</div><!-- /main -->
-
-<!-- Copy toast -->
-<div class="copy-toast" id="copyToast">Copiado al portapapeles</div>
-
-<!-- ════════════════════════════════════════════════════════════
-  SCRIPT
-═══════════════════════════════════════════════════════════════ -->
 <script>
 /* ─────────────────────────────────────────────────────────────
    ★  FLOW REGISTRY  ← Add / edit flows here
-   ─────────────────────────────────────────────────────────────
-   status: 'ready' | 'wip' | 'draft'
-
-   steps[]:  Each object represents one visual state in the flow.
-             label = short name shown in the Steps tab
-             desc  = one-line explanation for PMs / devs
-
-   components[]:  React components involved in this flow.
-                  name = component display name (matches TSX filename)
-                  path = path relative to repo root
    ───────────────────────────────────────────────────────────── */
 const FLOWS = [
   {
@@ -735,30 +292,7 @@ const FLOWS = [
     file: 'flows/LoginFlow/login-flow-preview.html',
     status: 'ready',
     tags: ['auth', 'onboarding'],
-    steps: [
-      {
-        label: 'Inicio de sesión',
-        desc: 'Ingresa correo y contraseña. Validación en línea, link a "Olvidé mi contraseña".',
-      },
-      {
-        label: 'Huella digital',
-        desc: 'Bottom sheet que solicita habilitar Face ID / Touch ID para futuras sesiones.',
-      },
-      {
-        label: 'Bienvenida',
-        desc: 'Confirmación de inicio de sesión exitoso.',
-      },
-    ],
-    components: [
-      {
-        name: 'LoginFlow',
-        path: 'packages/react/src/components/flows/LoginFlow',
-      },
-      {
-        name: 'BiometricSheet',
-        path: 'packages/react/src/components/flows/LoginFlow/BiometricSheet',
-      },
-    ],
+    steps: 4,
   },
   {
     id: 'personal-info',
@@ -767,211 +301,82 @@ const FLOWS = [
     file: 'flows/PersonalInfoFlow/personal-info-flow-preview.html',
     status: 'ready',
     tags: ['onboarding', 'kyc'],
-    steps: [
-      {
-        label: 'Datos personales',
-        desc: 'Formulario con nombre, apellidos, sexo, fecha y lugar de nacimiento, y celular. Botón Continuar dispara el lookup.',
-      },
-      {
-        label: 'CURP en proceso',
-        desc: 'Bottom sheet sube con spinner mientras se consulta la CURP automáticamente.',
-      },
-      {
-        label: 'Error — CURP duplicada',
-        desc: 'La CURP ya está asociada a otra cuenta. Muestra el CURP con borde rojo y link a iniciar sesión.',
-      },
-    ],
-    components: [
-      {
-        name: 'PersonalInfoFlow',
-        path: 'packages/react/src/components/flows/PersonalInfoFlow',
-      },
-      {
-        name: 'PersonalInfoScreen',
-        path: 'packages/react/src/components/flows/PersonalInfoFlow/PersonalInfoScreen',
-      },
-      {
-        name: 'CurpConfirmationSheet',
-        path: 'packages/react/src/components/flows/PersonalInfoFlow/CurpConfirmationSheet',
-      },
-    ],
+    steps: 3,
   },
   /* ── Paste new flow objects here ─────────────────────────── */
 ];
 
 /* ─────────────────────────────────────────────────────────────
-   DOM refs
+   Render
    ───────────────────────────────────────────────────────────── */
-const flowList      = document.getElementById('flowList');
-const noResults     = document.getElementById('noResults');
-const flowFrame     = document.getElementById('flowFrame');
-const openTabBtn    = document.getElementById('openTabBtn');
-const topbarFlowName= document.getElementById('topbarFlowName');
-const topbarBadge   = document.getElementById('topbarBadge');
-const flowDesc      = document.getElementById('flowDesc');
-const flowMeta      = document.getElementById('flowMeta');
-const stepsList     = document.getElementById('stepsList');
-const componentsList= document.getElementById('componentsList');
-const copyToast     = document.getElementById('copyToast');
-const searchInput   = document.getElementById('searchInput');
+const grid    = document.getElementById('flowGrid');
+const empty   = document.getElementById('emptyState');
+const search  = document.getElementById('searchInput');
 
-let activeId = null;
-
-/* ─────────────────────────────────────────────────────────────
-   Helpers
-   ───────────────────────────────────────────────────────────── */
-function statusLabel(s) {
+function statusInfo(s) {
   if (s === 'ready') return { text: 'Listo',       cls: 'badge-ready' };
   if (s === 'wip')   return { text: 'En progreso', cls: 'badge-wip'   };
-  return                      { text: 'Borrador',   cls: 'badge-draft' };
+  return                    { text: 'Borrador',     cls: 'badge-draft' };
 }
 
-function copyText(text) {
-  navigator.clipboard.writeText(text).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); document.body.removeChild(ta);
-  });
-  copyToast.classList.add('show');
-  setTimeout(() => copyToast.classList.remove('show'), 2000);
-}
-
-/* ─────────────────────────────────────────────────────────────
-   Render sidebar cards
-   ───────────────────────────────────────────────────────────── */
-function renderSidebar(flows) {
-  // Remove existing cards (keep noResults div)
-  [...flowList.querySelectorAll('.flow-card')].forEach(el => el.remove());
-
-  if (flows.length === 0) {
-    noResults.style.display = 'block';
-    return;
-  }
-  noResults.style.display = 'none';
+function renderGrid(flows) {
+  grid.querySelectorAll('.flow-card').forEach(el => el.remove());
+  empty.style.display = flows.length === 0 ? 'block' : 'none';
 
   flows.forEach(flow => {
-    const { text: stText, cls: stCls } = statusLabel(flow.status);
-    const card = document.createElement('div');
-    card.className = 'flow-card' + (flow.id === activeId ? ' active' : '');
-    card.dataset.id = flow.id;
+    const { text, cls } = statusInfo(flow.status);
+    const card = document.createElement('a');
+    card.className = 'flow-card';
+    card.href = flow.file;
+    card.target = '_blank';
+    card.rel = 'noopener';
     card.innerHTML = `
-      <div class="flow-card-title">
-        ${escHtml(flow.title)}
+      <div class="card-top">
+        <div class="card-title">${esc(flow.title)}</div>
+        <span class="badge ${cls}"><span class="badge-dot"></span>${text}</span>
       </div>
-      <div class="flow-card-desc">${escHtml(flow.description)}</div>
-      <div class="flow-card-meta">
-        <span class="badge ${stCls}"><span class="badge-dot"></span>${stText}</span>
-        ${flow.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}
+      <div class="card-desc">${esc(flow.description)}</div>
+      <div class="card-meta">
+        ${flow.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}
+      </div>
+      <div class="card-footer">
+        <div class="card-steps">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5l2 2" stroke-linecap="round"/>
+          </svg>
+          ${flow.steps} estado${flow.steps !== 1 ? 's' : ''}
+        </div>
+        <div class="card-cta">
+          Ver preview
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
     `;
-    card.addEventListener('click', () => selectFlow(flow.id));
-    flowList.appendChild(card);
+    grid.appendChild(card);
   });
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Select a flow
-   ───────────────────────────────────────────────────────────── */
-function selectFlow(id) {
-  const flow = FLOWS.find(f => f.id === id);
-  if (!flow) return;
-  activeId = id;
-
-  // Update sidebar active state
-  document.querySelectorAll('.flow-card').forEach(el => {
-    el.classList.toggle('active', el.dataset.id === id);
-  });
-
-  // Update top bar
-  topbarFlowName.textContent = flow.title;
-  const { text: stText, cls: stCls } = statusLabel(flow.status);
-  topbarBadge.innerHTML = `<span class="badge ${stCls}"><span class="badge-dot"></span>${stText}</span>`;
-
-  // Update iframe
-  flowFrame.src = flow.file;
-  openTabBtn.href = flow.file;
-
-  // Overview tab
-  flowDesc.textContent = flow.description;
-  const stepCount = flow.steps.length;
-  const { text: stText2, cls: stCls2 } = statusLabel(flow.status);
-  flowMeta.innerHTML = `
-    <span class="badge ${stCls2}"><span class="badge-dot"></span>${stText2}</span>
-    <span class="badge" style="background:var(--gray-100);color:var(--gray-600);">${stepCount} estado${stepCount !== 1 ? 's' : ''}</span>
-    ${flow.tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}
-  `;
-
-  // Steps tab
-  stepsList.innerHTML = flow.steps.map((s, i) => `
-    <div class="step-item">
-      <div class="step-line"></div>
-      <div class="step-num">${i + 1}</div>
-      <div class="step-body">
-        <div class="step-label">${escHtml(s.label)}</div>
-        <div class="step-desc">${escHtml(s.desc)}</div>
-      </div>
-    </div>
-  `).join('');
-
-  // Components tab
-  componentsList.innerHTML = flow.components.map(c => `
-    <div class="component-row">
-      <div class="component-name">${escHtml(c.name)}</div>
-      <div class="component-path" title="Click para copiar el path" onclick="copyText('${escAttr(c.path)}')">
-        <span class="component-path-text">${escHtml(c.path)}</span>
-        <svg class="copy-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
-          <rect x="7" y="7" width="10" height="10" rx="2"/><path d="M5 13H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v1" stroke-linecap="round"/>
-        </svg>
-      </div>
-    </div>
-  `).join('');
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Tab switching
-   ───────────────────────────────────────────────────────────── */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('pane-' + btn.dataset.tab).classList.add('active');
-  });
-});
-
-/* ─────────────────────────────────────────────────────────────
-   Search
-   ───────────────────────────────────────────────────────────── */
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.trim().toLowerCase();
-  const filtered = q
+search.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+  renderGrid(q
     ? FLOWS.filter(f =>
         f.title.toLowerCase().includes(q) ||
         f.description.toLowerCase().includes(q) ||
         f.tags.some(t => t.includes(q))
       )
-    : FLOWS;
-  renderSidebar(filtered);
+    : FLOWS
+  );
 });
 
-/* ─────────────────────────────────────────────────────────────
-   Escape helpers
-   ───────────────────────────────────────────────────────────── */
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
-function escAttr(str) {
-  return String(str).replace(/'/g,"\\'");
-}
-
-/* ─────────────────────────────────────────────────────────────
-   Init
-   ───────────────────────────────────────────────────────────── */
-renderSidebar(FLOWS);
-if (FLOWS.length > 0) selectFlow(FLOWS[0].id);
+renderGrid(FLOWS);
 </script>
 </body>
 </html>
