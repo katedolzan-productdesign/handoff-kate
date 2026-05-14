@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kueski — Personal Info Flow Preview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px 16px;
+    gap: 40px;
+  }
+
+  /* ── Phone frame ── */
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #1a1a1a;
+    border-radius: 48px;
+    padding: 12px;
+    box-shadow: 0 32px 80px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.08);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Status bar ── */
+  .status-bar {
+    height: 44px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+  }
+  .status-bar .time { color: #141c22; font-size: 15px; font-weight: 600; }
+  .status-bar .camera {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%,-50%);
+    width: 26px; height: 26px;
+    background: #111; border-radius: 50%;
+    border: 3px solid #2a2a2a;
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; fill: #141c22; }
+
+  /* ── Inner content (below status bar, scrollable) ── */
+  .screen-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Slide container (form screen sits here) ── */
+  .screen-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #fff;
+    transition: filter 300ms ease;
+  }
+  /* Dim form when sheet is open */
+  .state-loading .screen-content,
+  .state-error   .screen-content { filter: brightness(0.75); }
+
+  .screen-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px 8px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .header-step {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 14px; font-weight: 500; color: #66727d;
+    white-space: nowrap;
+  }
+  .screen-main {
+    flex: 1; overflow-y: auto;
+    padding: 8px 20px 0;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .screen-footer {
+    flex-shrink: 0; padding: 12px 20px 0;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .nav-bar {
+    display: flex; justify-content: center;
+    padding: 8px 0 10px;
+    flex-shrink: 0;
+  }
+  .nav-bar span {
+    width: 120px; height: 5px;
+    background: #000; border-radius: 10px; opacity: .18;
+  }
+
+  /* ── Icon buttons ── */
+  .icon-btn {
+    background: none; border: none; cursor: pointer;
+    color: #141c22; padding: 4px;
+    border-radius: 50%; display: grid; place-items: center;
+    transition: background .15s;
+  }
+  .icon-btn:hover { background: #f4f8fb; }
+  .icon-btn svg { width: 24px; height: 24px; }
+
+  /* ── Typography ── */
+  .section-title {
+    font-size: 24px; font-weight: 700; color: #141c22;
+    line-height: 1.25; letter-spacing: -0.01em;
+  }
+  .section-sub { margin-top: 6px; font-size: 16px; color: #384550; line-height: 1.5; }
+
+  /* ── Fields ── */
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-label { font-size: 14px; font-weight: 600; color: #141c22; }
+  .field-box {
+    position: relative; height: 48px; border-radius: 12px; background: #fff;
+  }
+  .field-box::after {
+    content: ''; position: absolute; inset: 0;
+    border-radius: 12px; pointer-events: none;
+    border: 0.5px solid #384550; transition: border .15s;
+  }
+  .field-box:focus-within::after { border-width: 2px; border-color: #0069f1; }
+  .field-box.error::after { border-width: 1.5px; border-color: #e53935; }
+  .field-box input {
+    position: absolute; inset: 0;
+    border: none; outline: none; background: transparent;
+    padding: 0 16px;
+    font-family: inherit; font-size: 16px; color: #141c22;
+    border-radius: 12px; width: 100%;
+  }
+  .field-box input::placeholder { color: #9aa5ae; }
+  .field-box.has-trailing input { padding-right: 48px; }
+  /* composite leading (flag + text): 80px */
+  .field-box.has-leading input { padding-left: 80px; }
+  /* single icon leading: icon(24) + left-pad(12) + gap(12) = 48px */
+  .field-box.has-icon-leading input { padding-left: 48px; }
+  .field-trailing {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    color: #66727d; display: grid; place-items: center; cursor: pointer;
+  }
+  .field-trailing svg { width: 24px; height: 24px; }
+  .field-leading {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    display: flex; align-items: center;
+    padding: 0 12px; gap: 12px;
+    pointer-events: none;
+  }
+  .field-leading .prefix-text { font-size: 16px; font-weight: 500; color: #141c22; }
+
+  /* ── CURP field variants ── */
+  .curp-loading-box {
+    height: 48px; border-radius: 12px; background: #f4f8fb;
+    border: 0.5px solid #d1d8e0;
+    width: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Segmented tabs ── */
+  .segmented {
+    display: flex; background: #f4f8fb;
+    border-radius: 12px; padding: 4px; gap: 4px;
+  }
+  .seg-item {
+    flex: 1; padding: 8px 12px;
+    border: none; border-radius: 8px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+    color: #66727d; background: transparent;
+  }
+  .seg-item.selected {
+    background: #fff; color: #141c22;
+    box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  }
+
+  /* ── Date segments ── */
+  .date-row { display: flex; align-items: stretch; }
+  .date-seg { flex: 1; position: relative; height: 48px; background: #fff; }
+  .date-seg::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    border-top: 0.5px solid #384550; border-bottom: 0.5px solid #384550;
+    transition: border .15s;
+  }
+  .date-seg:first-child { border-radius: 12px 0 0 12px; }
+  .date-seg:first-child::after { border-left: 0.5px solid #384550; border-radius: 12px 0 0 12px; }
+  .date-seg:last-child  { flex: 2; border-radius: 0 12px 12px 0; }
+  .date-seg:last-child::after  { border-right: 0.5px solid #384550; border-radius: 0 12px 12px 0; }
+  .date-seg:focus-within::after { border-color: #0069f1; border-width: 2px; }
+  .date-seg input {
+    position: absolute; inset: 0; border: none; outline: none;
+    background: transparent; text-align: center;
+    font-family: inherit; font-size: 16px; color: #141c22; width: 100%;
+  }
+  .date-seg input::placeholder { color: #9aa5ae; }
+  .date-divider { width: 1px; background: #d1d8e0; flex-shrink: 0; z-index: 1; }
+
+  /* ── Buttons ── */
+  .btn {
+    flex: 1; padding: 13px 20px;
+    border-radius: 12px; border: none;
+    font-family: inherit; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: opacity .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-full { flex: none; width: 100%; }
+  .btn:active { transform: scale(0.985); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .btn-primary { background: #0069f1; color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #0058cc; }
+  .btn-secondary {
+    background: #fff; color: #384550;
+    border: 1.5px solid #d1d8e0;
+  }
+  .btn-secondary:hover:not(:disabled) { background: #f7f9fb; }
+  .btn-row { display: flex; gap: 12px; }
+
+  /* Spinner */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2.5px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    flex-shrink: 0;
+  }
+  .spinner-blue {
+    width: 20px; height: 20px;
+    border: 2.5px solid rgba(0,105,241,.2);
+    border-top-color: #0069f1;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Data protection link ── */
+  .data-protection {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: none; border: none; cursor: pointer; font-family: inherit;
+  }
+  .data-protection svg { width: 16px; height: 16px; color: #66727d; flex-shrink: 0; }
+  .data-protection span { font-size: 14px; color: #66727d; text-decoration: underline; }
+
+  /* ═══════════════════════════════════════════════════════════════
+     BOTTOM SHEET (CURP confirmation)
+  ═══════════════════════════════════════════════════════════════ */
+  .sheet-scrim {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.45);
+    opacity: 0; pointer-events: none;
+    transition: opacity 300ms ease;
+    z-index: 20;
+  }
+  .state-loading .sheet-scrim,
+  .state-error   .sheet-scrim { opacity: 1; pointer-events: auto; }
+
+  .sheet {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: #fff;
+    border-radius: 28px 28px 0 0;
+    padding: 12px 20px 24px;
+    display: flex; flex-direction: column; gap: 20px;
+    box-shadow: 0 -4px 32px rgba(0,0,0,.18);
+    transform: translateY(105%);
+    /* dismiss: fast ease-in */
+    transition: transform 260ms cubic-bezier(0.4, 0, 1, 1);
+    z-index: 30;
+  }
+  .state-loading .sheet,
+  .state-error   .sheet {
+    transform: translateY(0);
+    /* open: spring-like ease-out */
+    transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sheet-handle {
+    width: 40px; height: 4px;
+    background: #d1d8e0; border-radius: 4px;
+    margin: 0 auto 4px;
+    flex-shrink: 0;
+  }
+  .sheet-title {
+    font-size: 20px; font-weight: 700; color: #141c22;
+    line-height: 1.3; letter-spacing: -0.005em;
+  }
+  .sheet-sub { margin-top: 6px; font-size: 16px; color: #384550; line-height: 1.5; }
+
+  /* CURP field inside sheet */
+  .curp-row { display: flex; flex-direction: column; gap: 4px; }
+  .curp-meta {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 8px; min-height: 20px;
+  }
+  .curp-error-msg {
+    font-size: 14px; color: #e53935; line-height: 1.5; flex: 1;
+  }
+  .curp-error-msg a { color: inherit; font-weight: 600; }
+  .curp-counter { font-size: 12px; color: #66727d; flex-shrink: 0; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    display: flex; flex-direction: column; gap: 16px;
+    padding-top: 60px; width: 200px; flex-shrink: 0;
+  }
+  .anno { display: flex; flex-direction: column; gap: 4px; }
+  .anno-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: #66727d;
+  }
+  .anno-value { font-size: 13px; color: #384550; line-height: 1.4; }
+  .anno-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #eef4ff; color: #0069f1;
+    border-radius: 6px; padding: 2px 8px;
+    font-size: 12px; font-weight: 600;
+  }
+
+  /* ── Login overlay (slides in from right over entire screen) ── */
+  .login-overlay {
+    position: absolute; inset: 0;
+    background: #fff;
+    z-index: 40;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    transform: translateX(105%);
+    transition: transform 380ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .state-login .login-overlay {
+    transform: translateX(0);
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  /* Freeze sheet behind when login is open */
+  .state-login .sheet-scrim { opacity: 0 !important; pointer-events: none !important; }
+  .state-login .sheet       { transform: translateY(105%) !important; transition: none !important; }
+
+  .login-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px 8px; flex-shrink: 0;
+  }
+  .login-main {
+    flex: 1; overflow-y: auto;
+    padding: 8px 20px 0;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .login-footer {
+    flex-shrink: 0; padding: 12px 20px 0;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+
+  /* ── State switcher ── */
+  .switcher {
+    display: flex; flex-direction: column; gap: 8px; margin-top: 8px;
+  }
+  .switcher-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #66727d;
+  }
+  .sw-btn {
+    padding: 8px 12px; border-radius: 8px;
+    border: 1.5px solid #d1d8e0;
+    background: #fff; font-family: inherit;
+    font-size: 13px; font-weight: 600; color: #384550;
+    cursor: pointer; text-align: left;
+    transition: all .15s;
+  }
+  .sw-btn:hover { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
+  .sw-btn.active { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
+</style>
+</head>
+<body>
+
+<!-- ───────────────────────── Phone ───────────────────────────── -->
+<div class="phone">
+  <div class="phone-screen" id="phoneScreen">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span class="time">9:30</span>
+      <div class="camera"></div>
+      <div class="status-icons">
+        <svg viewBox="0 0 17 12"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg viewBox="0 0 16 12"><path d="M8 9.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/><path d="M3.5 5.5C4.9 4.1 6.4 3.3 8 3.3s3.1.8 4.5 2.2l1.4-1.4C12.2 2.4 10.2 1.3 8 1.3S3.8 2.4 2.1 4.1z"/><path d="M.7 3.1C2.7 1.1 5.2 0 8 0s5.3 1.1 7.3 3.1L14 4.4C12.3 2.7 10.3 1.8 8 1.8S3.7 2.7 2 4.4z"/></svg>
+        <svg viewBox="0 0 25 12"><rect x="0" y="0" width="21" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="22" y="3.5" width="2.5" height="5" rx="1"/><rect x="1.5" y="1.5" width="16" height="9" rx="1.5"/></svg>
+      </div>
+    </div>
+
+    <!-- ── Inner area (form + sheet overlay) ── -->
+    <div class="screen-inner" id="screenInner">
+
+      <!-- Form screen -->
+      <div class="screen-content">
+        <div class="screen-header">
+          <button class="icon-btn" aria-label="Regresar">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <span class="header-step">Paso 2 de 5</span>
+          <button class="icon-btn" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="screen-main">
+          <div>
+            <h1 class="section-title">Queremos conocerte</h1>
+            <p class="section-sub">Completa tus datos tal como aparecen en tu INE o pasaporte.</p>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Nombre</label>
+            <div class="field-box"><input type="text" value="Alejandra" /></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Primer apellido</label>
+            <div class="field-box"><input type="text" value="Rivas" /></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Segundo apellido</label>
+            <div class="field-box"><input type="text" value="Morales" /></div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Sexo</span>
+            <div class="segmented">
+              <button class="seg-item" onclick="selectSexo(this)">Hombre</button>
+              <button class="seg-item selected" onclick="selectSexo(this)">Mujer</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Fecha de nacimiento</span>
+            <div class="date-row">
+              <div class="date-seg"><input type="text" value="25" aria-label="Día" /></div>
+              <div class="date-divider"></div>
+              <div class="date-seg"><input type="text" value="11" aria-label="Mes" /></div>
+              <div class="date-divider"></div>
+              <div class="date-seg"><input type="text" value="1983" aria-label="Año" /></div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Lugar de nacimiento</label>
+            <div class="field-box has-trailing">
+              <input type="text" value="Chihuahua" readonly style="cursor:pointer;" />
+              <div class="field-trailing">
+                <svg viewBox="0 0 32 32" fill="none"><path d="M8 11l8 8 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Número de celular</label>
+            <div class="field-box has-leading">
+              <div class="field-leading">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+                  <rect x="2" y="6" width="6" height="12" rx="1" fill="#006847"/>
+                  <rect x="8" y="6" width="8" height="12" fill="#fff"/>
+                  <rect x="16" y="6" width="6" height="12" rx="1" fill="#CE1126"/>
+                  <circle cx="12" cy="12" r="2" fill="#8B6914" opacity="0.5"/>
+                </svg>
+                <span class="prefix-text">+52</span>
+              </div>
+              <input type="tel" value="5512345678" />
+            </div>
+          </div>
+        </div><!-- /screen-main -->
+
+        <div class="screen-footer">
+          <button class="btn btn-primary btn-full" onclick="toState('loading')">Continuar</button>
+          <button class="data-protection">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M21.7071 12.7071C22.0976 12.3166 22.0976 11.6834 21.7071 11.2929C21.3166 10.9024 20.6834 10.9024 20.2929 11.2929L15 16.5858L12.7071 14.2929C12.3166 13.9024 11.6834 13.9024 11.2929 14.2929C10.9024 14.6834 10.9024 15.3166 11.2929 15.7071L14.2929 18.7071C14.6834 19.0976 15.3166 19.0976 15.7071 18.7071L21.7071 12.7071Z" fill="currentColor"/>
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M23.8386 4H8.16149C7.63435 3.99998 7.17957 3.99997 6.805 4.03057C6.40966 4.06287 6.01644 4.13419 5.63806 4.32698C5.07357 4.6146 4.61463 5.07354 4.32701 5.63803C4.13422 6.01641 4.0629 6.40963 4.0306 6.80497C4 7.17955 4.00001 7.63431 4.00003 8.16145L4.00002 14.2955C3.9997 16.9695 3.99952 18.5628 4.49192 19.9904C4.92691 21.2515 5.63682 22.4001 6.57027 23.3532C7.62693 24.4321 9.05205 25.1444 11.444 26.34L12.6376 26.9368C13.6312 27.434 14.3074 27.7724 15.0319 27.9083C15.6718 28.0284 16.3283 28.0284 16.9681 27.9083C17.6927 27.7724 18.3688 27.434 19.3625 26.9369L20.5561 26.34C22.948 25.1444 24.3731 24.4321 25.4298 23.3532C26.3632 22.4001 27.0731 21.2515 27.5081 19.9904C28.0005 18.5628 28.0004 16.9695 28 14.2955L28 8.16144C28.0001 7.6343 28.0001 7.17954 27.9695 6.80497C27.9372 6.40963 27.8658 6.01641 27.6731 5.63803C27.3854 5.07354 26.9265 4.6146 26.362 4.32698C25.9836 4.13419 25.5904 4.06287 25.1951 4.03057C24.8205 3.99997 24.3657 3.99998 23.8386 4ZM6.54604 6.109C6.59548 6.0838 6.6962 6.04613 6.96787 6.02393C7.25121 6.00078 7.62348 6 8.20003 6H23.8C24.3766 6 24.7489 6.00078 25.0322 6.02393C25.3039 6.04613 25.4046 6.0838 25.454 6.109C25.6422 6.20487 25.7952 6.35785 25.891 6.54601C25.9162 6.59546 25.9539 6.69618 25.9761 6.96784C25.9993 7.25118 26 7.62345 26 8.2V14.0892C26 17.0333 25.987 18.2669 25.6174 19.3382C25.2791 20.3191 24.727 21.2125 24.001 21.9538C23.208 22.7634 22.1105 23.3267 19.4771 24.6434L18.5939 25.085C17.427 25.6685 17.0142 25.8648 16.5993 25.9426C16.2033 26.0169 15.7968 26.0169 15.4007 25.9426C14.9859 25.8648 14.5731 25.6685 13.4062 25.085L12.5229 24.6434C9.88958 23.3267 8.7921 22.7634 7.9991 21.9538C7.27309 21.2125 6.72094 20.3191 6.38262 19.3382C6.01308 18.2669 6.00003 17.0333 6.00003 14.0892V8.2C6.00003 7.62345 6.00081 7.25118 6.02396 6.96784C6.04615 6.69618 6.08383 6.59546 6.10903 6.54601C6.2049 6.35785 6.35788 6.20487 6.54604 6.109Z" fill="currentColor"/>
+            </svg>
+            <span>Cómo protegemos tus datos</span>
+          </button>
+        </div>
+
+        <div class="nav-bar"><span></span></div>
+      </div><!-- /screen-content -->
+
+      <!-- ══════════════════════════════════════════════════════
+           BOTTOM SHEET — CURP confirmation
+      ══════════════════════════════════════════════════════ -->
+      <!-- ══════════════════════════════════════════════════════
+           LOGIN OVERLAY — slides in from right on "inicia sesión"
+      ══════════════════════════════════════════════════════ -->
+      <div class="login-overlay" id="loginOverlay">
+
+        <div class="login-header">
+          <!-- Kueski logo -->
+          <svg width="102" height="24" viewBox="0 0 119 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g clip-path="url(#pi-kl-clip)">
+              <path d="M54.286 13.2346H51.3396C51.231 13.2334 51.1233 13.2542 51.023 13.2958C50.9227 13.3373 50.8319 13.3987 50.7561 13.4763C50.6802 13.5539 50.6209 13.6461 50.5817 13.7472C50.5426 13.8483 50.5244 13.9563 50.5282 14.0647V22.9085C49.5588 23.8481 48.3383 24.7181 47.0364 24.7181C45.5399 24.7181 44.5106 23.8033 44.5106 21.5637V14.0431C44.5118 13.9359 44.4913 13.8296 44.4505 13.7304C44.4097 13.6313 44.3494 13.5413 44.273 13.4659C44.1967 13.3905 44.106 13.3312 44.0063 13.2914C43.9066 13.2517 43.7999 13.2324 43.6926 13.2346H40.7328C40.6256 13.2321 40.5189 13.2513 40.4193 13.291C40.3197 13.3307 40.2291 13.3901 40.153 13.4656C40.0769 13.5411 40.0169 13.6312 39.9765 13.7304C39.9361 13.8296 39.9163 13.936 39.9181 14.0431V21.567C39.9181 26.0313 42.4205 27.884 45.9539 27.884C47.9492 27.884 49.3061 27.0539 50.5348 26.0362C50.5388 26.1026 50.5388 26.1691 50.5348 26.2355V27.0838C50.531 27.1922 50.5492 27.3002 50.5884 27.4013C50.6276 27.5024 50.6869 27.5946 50.7627 27.6722C50.8386 27.7498 50.9294 27.8112 51.0297 27.8527C51.13 27.8943 51.2377 27.9151 51.3463 27.9139H54.286C54.3941 27.9144 54.5012 27.8931 54.6008 27.8512C54.7005 27.8094 54.7906 27.7478 54.8658 27.6703C54.941 27.5927 54.9997 27.5008 55.0383 27.4C55.077 27.2992 55.0949 27.1917 55.0908 27.0838V14.0597C55.0942 13.9523 55.0758 13.8452 55.0368 13.745C54.9978 13.6448 54.939 13.5535 54.8639 13.4765C54.7888 13.3995 54.6989 13.3384 54.5996 13.2968C54.5004 13.2553 54.3937 13.2341 54.286 13.2346Z" fill="#0075FF"/>
+              <path d="M62.049 21.8336C62.2352 23.9919 63.1947 24.9299 65.3862 24.9299C66.5085 24.9299 67.4962 24.6078 67.9502 24.0433C68.127 23.8175 68.3546 23.6363 68.6146 23.5146C68.8746 23.3929 69.1596 23.334 69.4467 23.3427H71.3938C71.5001 23.3409 71.6058 23.3606 71.7044 23.4006C71.803 23.4405 71.8925 23.5 71.9675 23.5753C72.0425 23.6507 72.1015 23.7404 72.1409 23.8391C72.1803 23.9378 72.1993 24.0434 72.1969 24.1496C72.1969 26.9503 69.3386 27.9165 65.0653 27.9165C60.3098 27.9165 57.4531 25.3333 57.4531 20.464C57.4531 15.5947 60.3397 12.9766 65.0653 12.9766C69.8175 12.9766 72.6741 15.5332 72.6741 20.2714V21.0268C72.677 21.1328 72.6584 21.2384 72.6194 21.3371C72.5803 21.4357 72.5216 21.5255 72.4469 21.6009C72.3721 21.6763 72.2829 21.7358 72.1845 21.7758C72.086 21.8158 71.9805 21.8355 71.8743 21.8336H62.049ZM62.0224 19.0628H68.0848C68.0034 17.0457 67.0423 15.9649 65.0653 15.9649C63.1398 15.9649 62.1288 17.0457 62.0191 19.0628H62.0224Z" fill="#0075FF"/>
+              <path d="M81.5168 27.917C77.2285 27.917 74.5066 26.9491 74.5066 24.1484C74.503 24.0435 74.5207 23.9389 74.5585 23.8409C74.5964 23.7429 74.6537 23.6536 74.727 23.5782C74.8003 23.5029 74.888 23.4431 74.985 23.4024C75.082 23.3618 75.1862 23.3411 75.2914 23.3416H77.2036C77.4856 23.3341 77.7654 23.3938 78.0199 23.5156C78.2743 23.6374 78.496 23.8179 78.6668 24.0422C79.1108 24.6066 80.0802 24.9287 81.2009 24.9287C83.399 24.9287 84.1323 24.419 84.1323 23.6587C84.1323 21.4257 74.4883 22.6626 74.4883 17.2255C74.4883 14.184 77.4397 12.9688 81.1294 12.9688C85.416 12.9688 88.1362 13.94 88.1362 16.7423C88.1396 16.8473 88.1218 16.9519 88.0838 17.0499C88.0459 17.1478 87.9886 17.2372 87.9154 17.3126C87.8422 17.388 87.7545 17.448 87.6576 17.4889C87.5607 17.5298 87.4566 17.5509 87.3514 17.5509H85.4392C85.1573 17.5591 84.8775 17.4998 84.6232 17.3779C84.3689 17.256 84.1475 17.0751 83.9777 16.8503C83.5321 16.2825 82.566 15.9604 81.442 15.9604C79.6379 15.9604 78.9062 16.4701 78.9062 17.2255C78.9062 19.4634 88.5503 18.1701 88.5503 23.6587C88.5486 26.7068 85.5955 27.917 81.5168 27.917Z" fill="#0075FF"/>
+              <path d="M28.1072 19.2582C29.6503 19.2582 30.3919 18.6173 30.9223 17.4884L32.171 14.681C32.3316 14.3211 32.5912 14.014 32.9197 13.7956C33.2482 13.5772 33.6321 13.4565 34.0267 13.4475H36.4626C37.1527 13.4475 37.2358 13.9838 36.9132 14.6794L35.2405 18.3733C34.6885 19.552 33.626 20.4917 32.4853 20.7324C33.5777 21.0528 34.4507 21.8049 35.2405 23.0915L37.4403 26.6841C37.8627 27.3847 37.6798 27.9193 36.9881 27.9193H34.5571C33.7074 27.9193 32.9924 27.3847 32.5701 26.6841L30.9223 23.9747C30.2106 22.7993 29.3028 22.2349 28.1072 22.2349V27.1141C28.1102 27.2194 28.0918 27.3242 28.0532 27.4222C28.0147 27.5202 27.9567 27.6095 27.8828 27.6846C27.809 27.7598 27.7207 27.8193 27.6232 27.8596C27.5258 27.8999 27.4212 27.9202 27.3158 27.9193H24.2929C24.1871 27.9205 24.0822 27.9003 23.9844 27.8602C23.8866 27.82 23.7979 27.7605 23.7236 27.6854C23.6492 27.6103 23.5908 27.521 23.5518 27.4228C23.5128 27.3247 23.4939 27.2197 23.4964 27.1141V10.1803C23.4935 10.0746 23.512 9.9694 23.5509 9.87104C23.5897 9.77269 23.6481 9.6832 23.7225 9.60797C23.7969 9.53274 23.8858 9.47333 23.9838 9.43331C24.0819 9.39329 24.187 9.37348 24.2929 9.37509H27.3158C27.4213 9.37393 27.526 9.39407 27.6235 9.43431C27.7211 9.47455 27.8094 9.53407 27.8834 9.60927C27.9573 9.68448 28.0152 9.77383 28.0537 9.87195C28.0922 9.97007 28.1104 10.075 28.1072 10.1803V19.2582Z" fill="#0075FF"/>
+              <path d="M95.5604 19.2164C97.1034 19.2164 97.845 18.5706 98.3754 17.4367L99.6242 14.6144C99.7838 14.2534 100.043 13.9452 100.372 13.7259C100.7 13.5065 101.085 13.3852 101.48 13.3759H103.916C104.606 13.3759 104.689 13.9155 104.368 14.6144L102.695 18.3266C102.142 19.5103 101.079 20.4549 99.9384 20.6957C101.031 21.0194 101.904 21.7748 102.695 23.0681L104.9 26.674C105.322 27.3779 105.14 27.9158 104.448 27.9158H102.01C101.161 27.9158 100.446 27.3779 100.015 26.674L98.3671 23.9513C97.6554 22.7709 96.7476 22.2031 95.552 22.2031V27.1056C95.5554 27.2112 95.5374 27.3164 95.4991 27.4149C95.4607 27.5134 95.4029 27.6032 95.329 27.6788C95.2551 27.7545 95.1666 27.8145 95.069 27.8552C94.9713 27.8959 94.8664 27.9165 94.7606 27.9158H91.746C91.6399 27.9167 91.5346 27.8963 91.4366 27.8557C91.3386 27.8151 91.2497 27.7552 91.1754 27.6796C91.101 27.604 91.0427 27.5142 91.0039 27.4156C90.9651 27.317 90.9466 27.2115 90.9495 27.1056V10.0921C90.9466 9.9863 90.9651 9.88104 91.004 9.78259C91.0428 9.68415 91.1012 9.59456 91.1756 9.5192C91.2499 9.44384 91.3388 9.38427 91.4368 9.34406C91.5349 9.30385 91.64 9.28384 91.746 9.28522H94.7689C94.8746 9.28405 94.9794 9.30424 95.077 9.34459C95.1747 9.38493 95.2632 9.44459 95.3371 9.51998C95.4111 9.59536 95.469 9.68491 95.5073 9.78323C95.5457 9.88155 95.5637 9.98661 95.5604 10.0921V19.2164Z" fill="#0075FF"/>
+              <path d="M108.136 27.9166C108.026 27.9166 107.917 27.8949 107.816 27.8525C107.714 27.8102 107.622 27.7481 107.545 27.67C107.467 27.5919 107.406 27.4992 107.365 27.3973C107.324 27.2954 107.303 27.1864 107.305 27.0766V14.1488C107.303 14.0389 107.324 13.9299 107.365 13.828C107.406 13.7262 107.467 13.6335 107.545 13.5553C107.622 13.4772 107.714 13.4152 107.816 13.3728C107.917 13.3305 108.026 13.3087 108.136 13.3087H111.151C111.261 13.3069 111.371 13.3274 111.473 13.3691C111.576 13.4108 111.669 13.4728 111.746 13.5513C111.824 13.6298 111.885 13.7232 111.925 13.8259C111.966 13.9286 111.985 14.0384 111.982 14.1488V27.0766C111.985 27.1869 111.966 27.2967 111.925 27.3994C111.885 27.5021 111.824 27.5955 111.746 27.6741C111.669 27.7526 111.576 27.8145 111.473 27.8562C111.371 27.8979 111.261 27.9185 111.151 27.9166H108.136Z" fill="#0075FF"/>
+              <path d="M111.102 9.26953H108.135C107.679 9.26953 107.309 9.63898 107.309 10.0947V11.2636C107.309 11.7194 107.679 12.0888 108.135 12.0888H111.102C111.558 12.0888 111.928 11.7194 111.928 11.2636V10.0947C111.928 9.63898 111.558 9.26953 111.102 9.26953Z" fill="#0075FF"/>
+            </g>
+            <path d="M17.9508 16.2145C17.9508 16.6117 17.1892 23.4965 16.8292 26.8628C16.7242 27.8558 15.7209 27.9204 15.4509 27.9204H3.8583C2.65171 27.9204 2.22174 27.3924 2.10508 26.7619C1.98175 26.0999 1.34179 19.6271 1.02181 17.373L0.910156 16.2525C0.910156 15.6948 1.30346 15.2148 1.85009 15.2148H16.9508C17.0833 15.2148 17.2144 15.2409 17.3366 15.2917C17.4588 15.3424 17.5696 15.4167 17.6626 15.5104C17.7557 15.604 17.829 15.715 17.8785 15.837C17.928 15.959 17.9525 16.0896 17.9508 16.2211V16.2145Z" fill="url(#pi-kl-g0)"/>
+            <path d="M17.9583 9.38037H13.1544C13.1877 8.19719 13.7414 7.84041 14.8704 7.12188L17.5309 5.42095C17.8893 5.20626 18.1883 4.90555 18.4006 4.54618C18.6129 4.1868 18.7317 3.78016 18.7464 3.36325V0.83426C18.7464 0.115723 18.2243 -0.0767724 17.5426 0.362979L14.0141 2.63475C12.752 3.45286 12.0187 4.36389 11.6862 5.48733C11.4617 4.30581 10.5472 3.19896 9.39317 2.61816L5.90129 0.874087C5.21621 0.542199 4.69409 0.625171 4.6891 1.34039L4.68079 3.86938C4.68351 4.27081 4.79739 4.66367 5.00985 5.00455C5.2223 5.34544 5.52506 5.62106 5.88466 5.80096L8.50856 7.09865C9.59104 7.64294 10.2146 7.84871 10.2379 9.37872H0.781517C0.326954 9.37872 0 9.72 0 10.152V13.2386C0 13.6703 0.326954 14.0086 0.781517 14.0086H17.9583C18.413 14.0086 18.7448 13.6703 18.7448 13.2386V10.152C18.7448 9.72 18.413 9.38037 17.9583 9.38037Z" fill="url(#pi-kl-g1)"/>
+            <defs>
+              <linearGradient id="pi-kl-g0" x1="3.35355" y1="15.2338" x2="12.2736" y2="31.2837" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#25A2FA"/><stop offset="0.48" stop-color="#0075FF"/><stop offset="1" stop-color="#3F58EA"/>
+              </linearGradient>
+              <linearGradient id="pi-kl-g1" x1="17.4017" y1="13.9608" x2="1.83348" y2="-0.522015" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00BBE9"/><stop offset="0.18" stop-color="#02CDCE"/><stop offset="0.37" stop-color="#1BDD9A"/>
+                <stop offset="0.55" stop-color="#38EF5F"/><stop offset="0.82" stop-color="#69F950"/><stop offset="1" stop-color="#95FF4F"/>
+              </linearGradient>
+              <clipPath id="pi-kl-clip"><rect width="118.972" height="27.9193" fill="white" transform="translate(0.0273438)"/></clipPath>
+            </defs>
+          </svg>
+
+          <button class="icon-btn" aria-label="Cerrar" onclick="toState('error')">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="login-main">
+          <div>
+            <h1 class="section-title">Qué bueno que estés por aquí</h1>
+            <p class="section-sub">Inicia sesión para acceder a tu cuenta.</p>
+          </div>
+
+          <!-- Email -->
+          <div class="field-group">
+            <label class="field-label" for="l-email">Correo electrónico</label>
+            <div class="field-box has-icon-leading">
+              <div class="field-leading">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#66727d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/>
+                </svg>
+              </div>
+              <input id="l-email" type="email" autocomplete="email" placeholder="tu@correo.com" />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="field-group">
+              <label class="field-label" for="l-password">Contraseña</label>
+              <div class="field-box has-icon-leading has-trailing">
+                <div class="field-leading">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#66727d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                  </svg>
+                </div>
+                <input id="l-password" type="password" autocomplete="current-password" placeholder="••••••••" />
+                <div class="field-trailing" style="cursor:pointer;" onclick="toggleLoginPassword()">
+                  <svg id="l-eye-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#66727d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <button style="background:none;border:none;cursor:pointer;font-family:inherit;font-size:14px;color:#384550;text-decoration:underline;text-align:left;padding:0;">
+              Olvidaste tu contraseña
+            </button>
+          </div>
+        </div>
+
+        <div class="login-footer">
+          <button class="btn btn-primary btn-full">Iniciar sesión</button>
+          <button class="btn btn-full" style="background:transparent;color:#0069f1;font-weight:600;border:none;">Crear cuenta</button>
+        </div>
+        <div class="nav-bar"><span></span></div>
+      </div><!-- /login-overlay -->
+
+      <div class="sheet-scrim" onclick="toState('form')"></div>
+
+      <div class="sheet" role="dialog" aria-label="Confirma tu información">
+        <div class="sheet-handle"></div>
+
+        <!-- Sheet heading -->
+        <div>
+          <h2 class="sheet-title">Confirma tu información</h2>
+          <p class="sheet-sub">Revisa que tus datos estén correctos para que calculemos tu CURP automáticamente.</p>
+        </div>
+
+        <!-- CURP field -->
+        <div class="curp-row">
+          <span class="field-label">CURP</span>
+
+          <!-- Loading state -->
+          <div class="curp-loading-box" id="curpLoading">
+            <div class="spinner-blue"></div>
+          </div>
+
+          <!-- Error state (hidden initially) -->
+          <div class="field-box error has-icon-leading" id="curpError" style="display:none;">
+            <div class="field-leading" style="border-color:#e5393555;">
+              <!-- IdCard icon -->
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M4 10C4 7.79086 5.79086 6 8 6H24C26.2091 6 28 7.79086 28 10V22C28 24.2091 26.2091 26 24 26H8C5.79086 26 4 24.2091 4 22V10ZM8 8C6.89543 8 6 8.89543 6 10V22C6 23.1046 6.89543 24 8 24H24C25.1046 24 26 23.1046 26 22V10C26 8.89543 25.1046 8 24 8H8Z" fill="#141c22"/>
+                <path d="M10 14C10 12.3431 11.3431 11 13 11C14.6569 11 16 12.3431 16 14C16 15.6569 14.6569 17 13 17C11.3431 17 10 15.6569 10 14Z" fill="#141c22"/>
+                <path d="M8.07026 21C8.55336 18.7178 10.5852 17 13 17C15.4148 17 17.4466 18.7178 17.9297 21H8.07026Z" fill="#141c22"/>
+                <path d="M19 13C18.4477 13 18 13.4477 18 14C18 14.5523 18.4477 15 19 15H22C22.5523 15 23 14.5523 23 14C23 13.4477 22.5523 13 22 13H19Z" fill="#141c22"/>
+                <path d="M18 18C18 17.4477 18.4477 17 19 17H22C22.5523 17 23 17.4477 23 18C23 18.5523 22.5523 19 22 19H19C18.4477 19 18 18.5523 18 18Z" fill="#141c22"/>
+              </svg>
+            </div>
+            <input type="text" value="RIVA831125MCHLRS09" readonly style="color:#141c22;" />
+          </div>
+
+          <!-- Meta row: error msg + counter -->
+          <div class="curp-meta">
+            <span class="curp-error-msg" id="curpErrorMsg" style="display:none;">
+              Esta CURP ya está asociada a d•••••@g•••••.com. Para continuar, <a href="#" onclick="toState('login');return false;">inicia sesión.</a>
+            </span>
+            <span class="curp-counter" id="curpCounter">0/18</span>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="sheetBackBtn" disabled onclick="toState('form')">Atrás</button>
+          <button class="btn btn-primary" id="sheetConfirmBtn" disabled>
+            <span id="sheetConfirmLabel" style="display:none;">Confirmar</span>
+            <div class="spinner" id="sheetSpinner"></div>
+          </button>
+        </div>
+      </div><!-- /sheet -->
+
+    </div><!-- /screen-inner -->
+  </div><!-- /phone-screen -->
+</div><!-- /phone -->
+
+<!-- ───────────────────────── Sidebar ─────────────────────────── -->
+<aside class="sidebar">
+  <h2 style="font-size:13px;font-weight:700;color:#141c22;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">
+    PersonalInfoFlow
+  </h2>
+  <p style="font-size:12px;color:#66727d;line-height:1.5;margin-bottom:8px;">
+    Paso 2 de 5 — CURP error flow
+  </p>
+
+  <div class="switcher">
+    <span class="switcher-label">State</span>
+    <button class="sw-btn active" id="sw-form"    onclick="toState('form')">① Form</button>
+    <button class="sw-btn"        id="sw-loading" onclick="toState('loading')">② Loading (after Continuar)</button>
+    <button class="sw-btn"        id="sw-error"   onclick="toState('error')">③ Error (CURP exists)</button>
+    <button class="sw-btn"        id="sw-login"   onclick="toState('login')">④ Login (inicia sesión)</button>
+  </div>
+
+  <div class="anno" style="margin-top:8px;">
+    <span class="anno-label">Components</span>
+    <span class="anno-value">
+      <span class="anno-chip">PersonalInfoScreen</span><br><br>
+      <span class="anno-chip">CurpConfirmationSheet</span>
+    </span>
+  </div>
+
+  <div class="anno">
+    <span class="anno-label">Sheet states</span>
+    <span class="anno-value">
+      <strong>loading</strong> — spinner, buttons disabled<br><br>
+      <strong>error</strong> — filled CURP + red border + error msg, buttons active
+    </span>
+  </div>
+
+  <div class="anno">
+    <span class="anno-label">Error field</span>
+    <span class="anno-value">
+      IdCardIcon leading<br>
+      Red border + error text<br>
+      "inicia sesión" link
+    </span>
+  </div>
+</aside>
+
+<script>
+  let currentState = 'form';
+  let loadingTimer = null;
+
+  function toState(state) {
+    if (loadingTimer) { clearTimeout(loadingTimer); loadingTimer = null; }
+    currentState = state;
+
+    // Update phone class
+    const inner = document.getElementById('screenInner');
+    inner.className = 'screen-inner'; // reset
+    if (state !== 'form') inner.classList.add('state-' + state);
+
+    // Toggle CURP field variants
+    const curpLoading = document.getElementById('curpLoading');
+    const curpError   = document.getElementById('curpError');
+    const curpErrorMsg = document.getElementById('curpErrorMsg');
+    const curpCounter  = document.getElementById('curpCounter');
+    const backBtn      = document.getElementById('sheetBackBtn');
+    const confirmBtn   = document.getElementById('sheetConfirmBtn');
+    const confirmLabel = document.getElementById('sheetConfirmLabel');
+    const spinner      = document.getElementById('sheetSpinner');
+
+    if (state === 'loading') {
+      curpLoading.style.display = '';
+      curpError.style.display   = 'none';
+      curpErrorMsg.style.display = 'none';
+      curpCounter.textContent   = '0/18';
+      backBtn.disabled    = true;
+      confirmBtn.disabled = true;
+      confirmLabel.style.display = 'none';
+      spinner.style.display      = '';
+
+      // Auto-advance to error after 1.8s
+      loadingTimer = setTimeout(() => toState('error'), 1800);
+    } else if (state === 'error') {
+      curpLoading.style.display  = 'none';
+      curpError.style.display    = '';
+      curpErrorMsg.style.display = '';
+      curpCounter.textContent    = '18/18';
+      backBtn.disabled    = false;
+      confirmBtn.disabled = false;
+      confirmLabel.style.display = '';
+      spinner.style.display      = 'none';
+    } else {
+      // form state — sheet hidden, nothing to do
+    }
+
+    // Update sidebar switcher
+    ['form','loading','error','login'].forEach(s => {
+      const btn = document.getElementById('sw-' + s);
+      if (btn) btn.classList.toggle('active', s === state);
+    });
+  }
+
+  // Sexo segmented tab
+  function selectSexo(el) {
+    el.closest('.segmented').querySelectorAll('.seg-item')
+      .forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // Password toggle on login overlay
+  function toggleLoginPassword() {
+    const input = document.getElementById('l-password');
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+</script>
+</body>
+</html>
