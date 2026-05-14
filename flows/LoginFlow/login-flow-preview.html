@@ -27,7 +27,7 @@
   /* Left panel — appears first via CSS order */
   .left-panel {
     order: 1;
-    width: 340px;
+    width: 460px;
     flex-shrink: 0;
     height: 100vh;
     overflow-y: auto;
@@ -414,6 +414,25 @@
   }
   .step-dot.active { background: #0069f1; }
 
+  /* ── State switcher ── */
+  .switcher {
+    display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
+  }
+  .switcher-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #66727d;
+  }
+  .sw-btn {
+    padding: 8px 12px; border-radius: 8px;
+    border: 1.5px solid #d1d8e0;
+    background: #fff; font-family: inherit;
+    font-size: 13px; font-weight: 600; color: #384550;
+    cursor: pointer; text-align: left;
+    transition: all .15s;
+  }
+  .sw-btn:hover { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
+  .sw-btn.active { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
+
   /* ── Dev Handoff section ──────────────────────────────────── */
   .handoff {
     margin-top: 24px;
@@ -790,6 +809,14 @@
 
 <!-- ─────────────────────── Left panel ────────────────────────── -->
 <aside class="left-panel">
+  <div class="switcher">
+    <span class="switcher-label">State</span>
+    <button class="sw-btn active" id="sw-login"   onclick="goTo('login')">① Login</button>
+    <button class="sw-btn"        id="sw-bio"     onclick="goTo('bio')">② Biometrics</button>
+    <button class="sw-btn"        id="sw-prompt"  onclick="goTo('prompt')">③ Android prompt</button>
+    <button class="sw-btn"        id="sw-success" onclick="goTo('success')">④ Success</button>
+  </div>
+
   <div class="info-bar">
     <div style="text-align:center;margin-bottom:4px">
       <div class="step-indicator" style="justify-content:center">
@@ -908,17 +935,25 @@
     var stepIdx = ['login','bio','prompt','success'].indexOf(state);
     if (stepIdx < 0) stepIdx = 0;
 
+    // Step dots
     ['dot0','dot1','dot2','dot3'].forEach(function(id, i) {
       document.getElementById(id).classList.toggle('active', i === stepIdx);
     });
 
     document.getElementById('step-label').textContent = 'Step ' + (stepIdx + 1) + ' of 4';
 
+    // Info cards
     ['card0','card1','card2','card3'].forEach(function(id, i) {
       document.getElementById(id).classList.toggle('dim', i !== stepIdx);
     });
 
     document.getElementById('hint-card').innerHTML = HINTS[stepIdx] || '';
+
+    // Switcher buttons
+    var swIds = ['sw-login','sw-bio','sw-prompt','sw-success'];
+    swIds.forEach(function(id, i) {
+      document.getElementById(id).classList.toggle('active', i === stepIdx);
+    });
   }
 
   function doLogin() {
