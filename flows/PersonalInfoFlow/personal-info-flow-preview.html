@@ -10,18 +10,18 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f0f4f8;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 40px 16px;
-    gap: 0;
+    height: 100vh;
+    overflow: hidden;
   }
-  .preview-row {
+  /* Phone column — right side, fills remaining width */
+  .phone-col {
+    order: 2;
+    flex: 1;
+    height: 100vh;
     display: flex;
-    align-items: flex-start;
-    gap: 40px;
+    align-items: center;
     justify-content: center;
-    width: 100%;
+    overflow: hidden;
   }
 
   /* ── Phone frame ── */
@@ -326,10 +326,22 @@
   .curp-counter { font-size: 12px; color: #66727d; flex-shrink: 0; }
 
   /* ── Sidebar ── */
+  /* Left panel — appears first via CSS order even though second in DOM */
   .sidebar {
-    display: flex; flex-direction: column; gap: 16px;
-    padding-top: 60px; width: 200px; flex-shrink: 0;
+    order: 1;
+    width: 340px;
+    flex-shrink: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: #fff;
+    border-right: 1px solid #d1d8e0;
+    padding: 24px 20px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #e0e7ef; border-radius: 2px; }
   .anno { display: flex; flex-direction: column; gap: 4px; }
   .anno-label {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
@@ -396,10 +408,8 @@
 
   /* ── Dev Handoff section ──────────────────────────────────── */
   .handoff {
-    width: 100%;
-    max-width: 670px;
-    margin-top: 48px;
-    padding-bottom: 56px;
+    margin-top: 0;
+    padding-bottom: 0;
   }
   .handoff-header {
     font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -458,9 +468,8 @@
 </head>
 <body>
 
-<div class="preview-row">
-
-<!-- ───────────────────────── Phone ───────────────────────────── -->
+<!-- ─────────────────────── Phone column ────────────────────────── -->
+<div class="phone-col">
 <div class="phone">
   <div class="phone-screen" id="phoneScreen">
 
@@ -718,8 +727,9 @@
     </div><!-- /screen-inner -->
   </div><!-- /phone-screen -->
 </div><!-- /phone -->
+</div><!-- /phone-col -->
 
-<!-- ───────────────────────── Sidebar ─────────────────────────── -->
+<!-- ─────────────────────── Left panel ──────────────────────────── -->
 <aside class="sidebar">
   <h2 style="font-size:13px;font-weight:700;color:#141c22;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">
     PersonalInfoFlow
@@ -760,9 +770,6 @@
       "inicia sesión" link
     </span>
   </div>
-</aside>
-
-</div><!-- /preview-row -->
 
 <!-- ───────────────────── Dev Handoff ─────────────────────────── -->
 <section class="handoff">
@@ -817,6 +824,8 @@
 
   </div>
 </section>
+</aside><!-- /left-panel -->
+
 <div id="pi-copy-toast" class="copy-toast-pi">Copiado al portapapeles</div>
 
 <script>
@@ -886,6 +895,18 @@
     const input = document.getElementById('l-password');
     input.type = input.type === 'password' ? 'text' : 'password';
   }
+
+  // Scale phone to fill viewport height
+  function resizePhone() {
+    var el = document.querySelector('.phone');
+    if (!el) return;
+    var outerH = 868; // 844px screen + 2×12px padding
+    var scale  = window.innerHeight / outerH;
+    el.style.transform       = 'scale(' + scale + ')';
+    el.style.transformOrigin = 'center center';
+  }
+  window.addEventListener('resize', resizePhone);
+  resizePhone();
 
   // Copy to clipboard (handoff section)
   function piCopy(text) {

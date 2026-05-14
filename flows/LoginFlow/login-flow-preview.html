@@ -11,12 +11,35 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f0f4f8;
     display: flex;
-    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+  /* Phone column — right, fills remaining width */
+  .phone-col {
+    order: 2;
+    flex: 1;
+    height: 100vh;
+    display: flex;
     align-items: center;
-    min-height: 100vh;
-    padding: 40px 16px;
+    justify-content: center;
+    overflow: hidden;
+  }
+  /* Left panel — appears first via CSS order */
+  .left-panel {
+    order: 1;
+    width: 340px;
+    flex-shrink: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: #fff;
+    border-right: 1px solid #d1d8e0;
+    padding: 24px 20px 48px;
+    display: flex;
+    flex-direction: column;
     gap: 0;
   }
+  .left-panel::-webkit-scrollbar { width: 4px; }
+  .left-panel::-webkit-scrollbar-thumb { background: #e0e7ef; border-radius: 2px; }
 
   /* ── Phone frame ─────────────────────────────────────────────── */
   .phone {
@@ -351,10 +374,7 @@
 
   /* ── Sidebar annotations ─────────────────────────────────────── */
   .info-bar {
-    position: absolute; right: -190px; top: 50%;
-    transform: translateY(-50%);
     display: flex; flex-direction: column; gap: 12px;
-    width: 174px;
   }
   .info-card {
     background: #fff; border-radius: 12px;
@@ -394,14 +414,10 @@
   }
   .step-dot.active { background: #0069f1; }
 
-  @media (max-width: 720px) { .info-bar { display: none; } }
-
   /* ── Dev Handoff section ──────────────────────────────────── */
   .handoff {
-    width: 100%;
-    max-width: 670px;
-    margin-top: 48px;
-    padding-bottom: 56px;
+    margin-top: 24px;
+    padding-bottom: 0;
   }
   .handoff-header {
     font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -473,7 +489,8 @@
 </head>
 <body>
 
-<div style="position:relative">
+<!-- ─────────────────────── Phone column ────────────────────────── -->
+<div class="phone-col">
   <!-- Phone -->
   <div class="phone">
     <div class="phone-screen">
@@ -769,8 +786,10 @@
       </div><!-- /slide-container -->
     </div><!-- /phone-screen -->
   </div><!-- /phone -->
+</div><!-- /phone-col -->
 
-  <!-- Sidebar annotations -->
+<!-- ─────────────────────── Left panel ────────────────────────── -->
+<aside class="left-panel">
   <div class="info-bar">
     <div style="text-align:center;margin-bottom:4px">
       <div class="step-indicator" style="justify-content:center">
@@ -811,8 +830,7 @@
     <div class="hint-card" id="hint-card">
       Tap <strong>Iniciar sesión</strong> to begin the flow →
     </div>
-  </div>
-</div>
+  </div><!-- /info-bar -->
 
 <!-- ───────────────────────── Dev Handoff ─────────────────────────── -->
 <section class="handoff">
@@ -864,6 +882,8 @@
 
   </div>
 </section>
+</aside><!-- /left-panel -->
+
 <div id="lf-copy-toast" class="copy-toast-lf">Copiado al portapapeles</div>
 
 <script>
@@ -936,6 +956,18 @@
 
   // Initialise sidebar on load
   updateSidebar('login');
+
+  // Scale phone to fill viewport height
+  function resizePhone() {
+    var el = document.querySelector('.phone');
+    if (!el) return;
+    var outerH = 868; // 844px screen + 2×12px padding
+    var scale  = window.innerHeight / outerH;
+    el.style.transform       = 'scale(' + scale + ')';
+    el.style.transformOrigin = 'center center';
+  }
+  window.addEventListener('resize', resizePhone);
+  resizePhone();
 
   function lfCopy(text) {
     navigator.clipboard.writeText(text).catch(function() {
