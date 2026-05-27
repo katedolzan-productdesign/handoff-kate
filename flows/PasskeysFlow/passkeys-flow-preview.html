@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kueski — Passkeys Flow Preview</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;display:flex;height:100vh;overflow:hidden}
+.phone-col{order:2;flex:1;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.left-panel{order:1;width:460px;flex-shrink:0;height:100vh;overflow-y:auto;background:#fff;border-right:1px solid #d1d8e0;padding:24px 20px 48px;display:flex;flex-direction:column;gap:0}
+.left-panel::-webkit-scrollbar{width:4px}
+.left-panel::-webkit-scrollbar-thumb{background:#e0e7ef;border-radius:2px}
+
+/* Phone */
+.phone{width:390px;height:844px;background:#1a1a1a;border-radius:48px;padding:12px;box-shadow:0 32px 80px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.08);position:relative;flex-shrink:0}
+.phone-screen{width:100%;height:100%;border-radius:38px;overflow:hidden;position:relative;background:#fff;display:flex;flex-direction:column}
+.slide-container{position:relative;width:100%;height:100%;overflow:hidden}
+.screen{position:absolute;inset:0;background:#fff;display:flex;flex-direction:column;will-change:transform;overflow:hidden;transition:transform 380ms cubic-bezier(0.4,0,0.2,1)}
+
+/* Status bars */
+.sb-dark{height:44px;background:#1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;position:relative;z-index:10}
+.sb-dark .t{color:#fff;font-size:15px;font-weight:600}
+.sb-light{height:44px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;position:relative;z-index:10}
+.sb-light .t{color:#141c22;font-size:15px;font-weight:600}
+.sb-and{height:36px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0}
+.sb-and .t{color:#141c22;font-size:13px;font-weight:600}
+.cam{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:26px;height:26px;background:#111;border-radius:50%;border:3px solid #2a2a2a}
+.si{display:flex;gap:6px;align-items:center}
+.si svg{width:16px;height:16px}
+
+/* Shared layout */
+.sh{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 8px;flex-shrink:0}
+.sm{flex:1;overflow-y:auto;padding:4px 20px 0;display:flex;flex-direction:column;gap:20px}
+.sf{flex-shrink:0;padding:12px 20px 8px;display:flex;flex-direction:column;gap:8px}
+.nb{display:flex;justify-content:center;padding:6px 0 12px;flex-shrink:0}
+.nb span{width:120px;height:5px;background:#000;border-radius:10px;opacity:.18}
+.close-btn{background:none;border:none;cursor:pointer;color:#141c22;padding:4px;border-radius:50%;display:grid;place-items:center;transition:background .15s}
+.close-btn:hover{background:#f4f8fb}
+.back-btn{background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:8px;display:flex;align-items:center;gap:4px;font-size:16px;color:#0069f1;font-family:inherit;transition:background .15s}
+.back-btn:hover{background:#eef4ff}
+.sec-title{font-size:24px;font-weight:700;color:#141c22;line-height:1.25;letter-spacing:-0.01em}
+.sec-sub{margin-top:4px;font-size:16px;color:#384550;line-height:1.5}
+
+/* Buttons */
+.btn{width:100%;padding:13px 20px;border-radius:12px;border:none;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:scale(0.985)}
+.btn-p{background:#0069f1;color:#fff}
+.btn-p:hover{background:#0058cc}
+.btn-g{background:transparent;color:#0069f1;border:none}
+.btn-g:hover{background:rgba(0,105,241,.06)}
+.btn-s{background:#fff;color:#384550;border:2px solid #66727d;padding:11px 20px}
+.btn-s:hover{background:#f7f9fb}
+.btn-ok{background:#008246;color:#fff}
+.btn-ok:hover{background:#006b38}
+
+/* Fields */
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:14px;font-weight:600;color:#141c22}
+.fb{position:relative;height:48px;border-radius:12px;background:#fff}
+.fb::after{content:'';position:absolute;inset:0;border-radius:12px;pointer-events:none;border:0.5px solid #384550}
+.fb input{position:absolute;inset:0;border:none;outline:none;background:transparent;padding:0 16px 0 46px;font-family:inherit;font-size:16px;color:#141c22;border-radius:12px;width:100%}
+.fi{position:absolute;top:50%;transform:translateY(-50%);left:14px;pointer-events:none;display:grid;place-items:center;width:24px;height:24px;color:#66727d}
+.divider-or{display:flex;align-items:center;gap:12px;color:#66727d;font-size:13px}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:#d1d8e0}
+
+/* Passkey CTAs */
+.pk-btn-wrap{background:#eef4ff;border:2px solid #0069f1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background .15s}
+.pk-btn-wrap:hover{background:#dce8ff}
+.pk-btn-icon{width:48px;height:48px;background:#0069f1;border-radius:12px;display:grid;place-items:center;flex-shrink:0;color:#fff}
+.pk-btn-title{font-size:16px;font-weight:700;color:#141c22}
+.pk-btn-sub{font-size:13px;color:#66727d;margin-top:2px}
+.pk-btn-chev{margin-left:auto;color:#0069f1;flex-shrink:0}
+
+/* ── iOS Sheet ── */
+.ios-scrim{position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:20;pointer-events:none}
+.ios-sheet{position:absolute;bottom:0;left:0;right:0;background:rgba(242,242,247,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:16px 16px 0 0;z-index:21}
+.ios-handle{width:36px;height:4px;background:rgba(60,60,67,0.3);border-radius:2px;margin:8px auto 0}
+.ios-hdr{padding:16px 20px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border-bottom:0.5px solid rgba(60,60,67,0.2)}
+.ios-site{font-size:12px;color:#636366;font-family:-apple-system,sans-serif}
+.ios-ttl{font-size:17px;font-weight:600;color:#000;font-family:-apple-system,'SF Pro Display',sans-serif;line-height:1.3}
+.ios-user-row{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:0.5px solid rgba(60,60,67,0.2)}
+.ios-av{width:42px;height:42px;border-radius:21px;background:#0069f1;color:#fff;display:grid;place-items:center;font-size:16px;font-weight:700;font-family:-apple-system,sans-serif;flex-shrink:0}
+.ios-un{font-size:15px;font-weight:600;color:#000;font-family:-apple-system,sans-serif}
+.ios-ue{font-size:13px;color:#636366;font-family:-apple-system,sans-serif}
+.ios-bio-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:0.5px solid rgba(60,60,67,0.2)}
+.ios-bio-lbl{font-size:17px;color:#000;font-family:-apple-system,'SF Pro Text',sans-serif}
+.ios-btns{padding:12px 16px 12px;display:flex;flex-direction:column;gap:8px}
+.ios-btn{width:100%;padding:14px;border-radius:14px;border:none;font-family:-apple-system,'SF Pro Text',sans-serif;font-size:17px;cursor:pointer;text-align:center;background:rgba(255,255,255,0.85);color:#007AFF;transition:background .15s}
+.ios-btn:hover{background:#fff}
+.ios-btn.pri{background:#007AFF;color:#fff;font-weight:600}
+.ios-btn.pri:hover{background:#0066d6}
+.ios-btn.can{color:#FF3B30}
+
+/* ── Android Sheet ── */
+.and-scrim{position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:20;pointer-events:none}
+.and-sheet{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:28px 28px 0 0;padding:0 24px 32px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 -4px 32px rgba(0,0,0,.18);z-index:21}
+.and-handle{width:40px;height:4px;background:#ddd;border-radius:4px;margin-top:12px}
+.and-title{font-size:18px;font-weight:500;text-align:center;color:#202124;font-family:'Google Sans','Product Sans',sans-serif;line-height:1.35}
+.and-fp-wrap{position:relative;width:80px;height:80px;display:grid;place-items:center}
+.and-fp-ring{position:absolute;inset:-10px;border-radius:50%;background:rgba(30,136,229,0.12);animation:rpulse 2s ease-in-out infinite}
+@keyframes rpulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.6}}
+.and-fp-bg{width:80px;height:80px;border-radius:50%;background:#E8F0FE;display:grid;place-items:center}
+.and-sub{font-size:14px;color:#5F6368;text-align:center;line-height:1.6;font-family:'Google Sans',sans-serif}
+.and-cancel-btn{background:none;border:none;cursor:pointer;font-family:'Google Sans',sans-serif;font-size:14px;font-weight:500;color:#1E88E5;letter-spacing:.08em;text-transform:uppercase;padding:8px 16px;border-radius:6px;transition:background .15s}
+.and-cancel-btn:hover{background:rgba(30,136,229,.08)}
+
+/* Account screen */
+.acct-hdr{padding:16px 20px 8px;flex-shrink:0}
+.acct-title{font-size:28px;font-weight:700;color:#141c22;letter-spacing:-0.01em}
+.acct-body{flex:1;overflow-y:auto}
+.acct-slbl{font-size:14px;font-weight:700;color:#141c22;padding:16px 20px 8px}
+.acct-row{display:flex;align-items:center;padding:14px 20px;border-bottom:0.5px solid #e5e9ed;cursor:pointer;transition:background .1s}
+.acct-row:hover{background:#f7f9fb}
+.acct-ico{width:36px;height:36px;flex-shrink:0;display:grid;place-items:center;color:#384550}
+.acct-lbl{flex:1;font-size:16px;color:#141c22;margin-left:12px}
+.acct-chev{color:#0069f1}
+.acct-row.hi{background:#eef4ff}
+.acct-row.hi .acct-lbl{color:#0069f1;font-weight:600}
+.acct-badge{font-size:10px;font-weight:700;padding:2px 6px;background:#0069f1;color:#fff;border-radius:10px;margin-right:8px}
+
+/* Bottom nav */
+.bot-nav{display:flex;border-top:0.5px solid #e5e9ed;padding:8px 0 0;flex-shrink:0;background:#fff}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 8px;font-size:10px;color:#66727d;cursor:pointer}
+.bni.on{color:#0069f1}
+.bni svg{width:24px;height:24px}
+.bni .lbl{font-weight:500}
+.bni.on .lbl{font-weight:700}
+
+/* Passkey intro benefits */
+.pk-icon-c{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#eef4ff,#dce8ff);display:grid;place-items:center;margin:0 auto;flex-shrink:0}
+.pk-ben{display:flex;gap:14px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0f4f8}
+.pk-ben:last-child{border-bottom:none}
+.pk-bi{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;flex-shrink:0}
+.pk-bi.bl{background:#eef4ff;color:#0069f1}
+.pk-bi.gr{background:#e6f5ee;color:#008246}
+.pk-bi.pu{background:#f3eeff;color:#6b34da}
+.pk-bt{font-size:14px;font-weight:600;color:#141c22;margin-bottom:2px}
+.pk-bd{font-size:13px;color:#66727d;line-height:1.4}
+
+/* Success screens */
+.succ-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:16px;text-align:center}
+.succ-ico{width:80px;height:80px;border-radius:50%;display:grid;place-items:center}
+.succ-ico.gn{background:#e6f5ee}
+.succ-ico.bl{background:#eef4ff}
+.succ-hl{font-size:26px;font-weight:700;color:#141c22;line-height:1.2;letter-spacing:-0.01em}
+.succ-body{font-size:15px;color:#384550;line-height:1.5;max-width:280px}
+
+/* Legal */
+.legal{font-size:12px;color:#66727d;line-height:1.5;padding:0 20px 8px;flex-shrink:0}
+
+/* ── Left panel sidebar ── */
+.flow-selector{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.fsl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#66727d}
+.flow-tabs{display:flex;gap:6px}
+.flow-tab{flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid #d1d8e0;background:#fff;font-family:inherit;font-size:11px;font-weight:600;color:#384550;cursor:pointer;text-align:center;transition:all .15s;line-height:1.4}
+.flow-tab:hover,.flow-tab.active{border-color:#0069f1;color:#0069f1;background:#eef4ff}
+.switcher{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.sw-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#66727d}
+.sw-btn{padding:8px 12px;border-radius:8px;border:1.5px solid #d1d8e0;background:#fff;font-family:inherit;font-size:13px;font-weight:600;color:#384550;cursor:pointer;text-align:left;transition:all .15s}
+.sw-btn:hover,.sw-btn.active{border-color:#0069f1;color:#0069f1;background:#eef4ff}
+.info-bar{display:flex;flex-direction:column;gap:12px}
+.ic{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 2px 12px rgba(0,0,0,.08);font-size:12px;color:#384550;line-height:1.5;transition:opacity .4s}
+.ic.dim{opacity:.3}
+.ic strong{display:block;font-size:10px;font-weight:600;color:#66727d;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;margin-top:5px;margin-right:3px}
+.t-b{background:#e6f0ff;color:#0058cc}
+.t-g{background:#e6f5ee;color:#006b38}
+.t-gr{background:#f0f4f8;color:#384550}
+.t-io{background:#F2F2F7;color:#000}
+.t-an{background:#E8F0FE;color:#1565C0}
+.t-pu{background:#f3eeff;color:#6b34da}
+
+/* Handoff */
+.handoff{margin-top:24px}
+.ho-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#66727d;padding-bottom:10px;border-bottom:1px solid #d1d8e0;margin-bottom:16px}
+.comp-cards{display:flex;flex-direction:column;gap:12px}
+.comp-card{background:#fff;border:1px solid #e0e7ef;border-radius:12px;padding:18px}
+.comp-name{font-size:15px;font-weight:700;color:#141c22;margin-bottom:2px}
+.comp-path{font-size:12px;color:#9aa5ae;margin-bottom:12px;font-family:'SF Mono',monospace}
+.ir{display:flex;align-items:center;gap:8px;background:#f4f8fb;border:1px solid #e0e7ef;border-radius:8px;padding:10px 12px;font-family:'SF Mono',monospace;font-size:12px;color:#384550;cursor:pointer;margin-bottom:16px;transition:border-color .15s,background .15s}
+.ir:hover{border-color:#0069f1;background:#eef4ff}
+.ir span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ir svg{width:14px;height:14px;flex-shrink:0;color:#9aa5ae;transition:color .15s}
+.ir:hover svg{color:#0069f1}
+.pt{width:100%;border-collapse:collapse;font-size:12.5px}
+.pt th{text-align:left;padding:6px 10px;font-size:11px;font-weight:600;color:#66727d;border-bottom:1px solid #e0e7ef;text-transform:uppercase;letter-spacing:.04em;background:#f7f9fb}
+.pt th:first-child{border-radius:6px 0 0 0}
+.pt th:last-child{border-radius:0 6px 0 0}
+.pt td{padding:8px 10px;color:#384550;border-bottom:1px solid #f0f4f8;vertical-align:top;line-height:1.4}
+.pt tr:last-child td{border-bottom:none}
+.pn{font-family:'SF Mono',monospace;color:#0069f1;font-weight:600;white-space:nowrap}
+.pty{font-family:'SF Mono',monospace;color:#384550;font-size:11.5px}
+.pde{font-family:'SF Mono',monospace;color:#66727d;font-size:11.5px;white-space:nowrap}
+.copy-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:#141c22;color:#fff;font-size:13px;padding:8px 16px;border-radius:20px;opacity:0;pointer-events:none;transition:opacity 200ms,transform 200ms;z-index:1000}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LEFT PANEL ═══════════════ -->
+<aside class="left-panel">
+
+  <!-- Flow selector -->
+  <div class="flow-selector">
+    <span class="fsl">Flujo</span>
+    <div class="flow-tabs">
+      <button class="flow-tab active" id="ft-login" onclick="goToFlow('login')">🔑 Login</button>
+      <button class="flow-tab" id="ft-enroll" onclick="goToFlow('enroll')">➕ Enrollar</button>
+      <button class="flow-tab" id="ft-signup" onclick="goToFlow('signup')">📝 Registro</button>
+    </div>
+  </div>
+
+  <!-- Step switcher -->
+  <div class="switcher">
+    <span class="sw-lbl">Estado</span>
+
+    <div id="sw-login" style="display:flex;flex-direction:column;gap:8px">
+      <button class="sw-btn active" id="sw-lp0" onclick="goToStep(0)">① Pantalla de login</button>
+      <button class="sw-btn" id="sw-lp1" onclick="goToStep(1)">② iOS — Face ID prompt</button>
+      <button class="sw-btn" id="sw-lp2" onclick="goToStep(2)">③ Android — Fingerprint</button>
+      <button class="sw-btn" id="sw-lp3" onclick="goToStep(3)">④ Sesión iniciada</button>
+    </div>
+
+    <div id="sw-enroll" style="display:none;flex-direction:column;gap:8px">
+      <button class="sw-btn" id="sw-ep0" onclick="goToStep(0)">① Mi cuenta</button>
+      <button class="sw-btn" id="sw-ep1" onclick="goToStep(1)">② Intro passkey</button>
+      <button class="sw-btn" id="sw-ep2" onclick="goToStep(2)">③ iOS — Guardar passkey</button>
+      <button class="sw-btn" id="sw-ep3" onclick="goToStep(3)">④ Passkey enrollada</button>
+    </div>
+
+    <div id="sw-signup" style="display:none;flex-direction:column;gap:8px">
+      <button class="sw-btn" id="sw-sp0" onclick="goToStep(0)">① Crear cuenta</button>
+      <button class="sw-btn" id="sw-sp1" onclick="goToStep(1)">② iOS — Face ID</button>
+      <button class="sw-btn" id="sw-sp2" onclick="goToStep(2)">③ Android — Huella</button>
+      <button class="sw-btn" id="sw-sp3" onclick="goToStep(3)">④ Cuenta creada</button>
+    </div>
+  </div>
+
+  <!-- Info bar -->
+  <div class="info-bar" id="info-bar"></div>
+
+  <!-- Dev Handoff -->
+  <section class="handoff">
+    <p class="ho-hdr">Dev Handoff</p>
+    <div class="comp-cards">
+
+      <!-- PasskeyAuthButton -->
+      <div class="comp-card">
+        <p class="comp-name">PasskeyAuthButton</p>
+        <p class="comp-path">src/components/auth/PasskeyAuthButton.tsx</p>
+        <div class="ir" onclick="copyImport(this,'import { PasskeyAuthButton } from \'@kueski/ui/auth\'')">
+          <span>import {'{ PasskeyAuthButton }'} from '@kueski/ui/auth'</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </div>
+        <table class="pt">
+          <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="pn">onSuccess</td><td class="pty">(credential) => void</td><td class="pde">—</td><td>Callback with WebAuthn credential</td></tr>
+            <tr><td class="pn">onError</td><td class="pty">(err: Error) => void</td><td class="pde">—</td><td>Authentication failure handler</td></tr>
+            <tr><td class="pn">mode</td><td class="pty">'login' | 'register'</td><td class="pde">'login'</td><td>get() for login, create() for register</td></tr>
+            <tr><td class="pn">rpId</td><td class="pty">string</td><td class="pde">'kueski.com'</td><td>Relying Party ID for WebAuthn</td></tr>
+            <tr><td class="pn">label</td><td class="pty">string</td><td class="pde">—</td><td>Overrides default button text</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PasskeySheet -->
+      <div class="comp-card">
+        <p class="comp-name">PasskeySystemSheet</p>
+        <p class="comp-path">src/components/auth/PasskeySystemSheet.tsx</p>
+        <div class="ir" onclick="copyImport(this,'import { PasskeySystemSheet } from \'@kueski/ui/auth\'')">
+          <span>import {'{ PasskeySystemSheet }'} from '@kueski/ui/auth'</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </div>
+        <table class="pt">
+          <thead><tr><th>Prop</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="pn">platform</td><td class="pty">'ios' | 'android'</td><td class="pde">'ios'</td><td>Renders native OS sheet style</td></tr>
+            <tr><td class="pn">visible</td><td class="pty">boolean</td><td class="pde">false</td><td>Controls sheet visibility</td></tr>
+            <tr><td class="pn">userName</td><td class="pty">string</td><td class="pde">—</td><td>Username shown in passkey sheet</td></tr>
+            <tr><td class="pn">userEmail</td><td class="pty">string</td><td class="pde">—</td><td>Email shown below username</td></tr>
+            <tr><td class="pn">onCancel</td><td class="pty">() => void</td><td class="pde">—</td><td>Cancel button handler</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+</aside>
+
+<!-- ═══════════════ PHONE ═══════════════ -->
+<div class="phone-col">
+<div class="phone" id="phone-frame">
+<div class="phone-screen">
+<div class="slide-container" id="slider">
+
+<!-- ══════════ LOGIN FLOW ══════════ -->
+
+<!-- 1. lp-signin: Sign-in with passkey CTA -->
+<div class="screen" id="s-lp0">
+  <div class="sb-dark">
+    <span class="t">9:30</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <div class="sh">
+    <div class="kueski-logo" id="kl-lp0"></div>
+    <button class="close-btn" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sm">
+    <div>
+      <p class="sec-title">Qué bueno que estés por aquí</p>
+      <p class="sec-sub">Inicia sesión de forma rápida y segura con tu passkey.</p>
+    </div>
+    <!-- Passkey CTA card -->
+    <div class="pk-btn-wrap" onclick="goToStep(1)">
+      <div class="pk-btn-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="10" cy="14" r="7" stroke="#fff" stroke-width="2.5" fill="none"/>
+          <circle cx="10" cy="14" r="3" fill="#fff"/>
+          <path d="M17 14H26M23 14V10.5M20 14V10.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <p class="pk-btn-title">Continuar con passkey</p>
+        <p class="pk-btn-sub">Sin contraseña — solo tu huella o Face ID</p>
+      </div>
+      <div class="pk-btn-chev">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+    <div class="divider-or">o</div>
+  </div>
+  <div class="sf">
+    <button class="btn btn-s">Usar correo y contraseña</button>
+    <button class="btn btn-g">Crear cuenta</button>
+  </div>
+  <div class="nb"><span></span></div>
+</div>
+
+<!-- 2. lp-ios: iOS Face ID passkey prompt -->
+<div class="screen" id="s-lp1" style="transform:translateX(100%)">
+  <div class="sb-dark">
+    <span class="t">9:30</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <!-- Dimmed background -->
+  <div style="flex:1;display:flex;flex-direction:column;opacity:0.35;pointer-events:none;padding:12px 20px;gap:16px">
+    <div><p class="sec-title" style="font-size:20px">Qué bueno que estés por aquí</p></div>
+    <div class="pk-btn-wrap" style="opacity:0.6"><div class="pk-btn-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="10" cy="14" r="7" stroke="#fff" stroke-width="2.5" fill="none"/><circle cx="10" cy="14" r="3" fill="#fff"/><path d="M17 14H26M23 14V10.5M20 14V10.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div><div><p class="pk-btn-title">Continuar con passkey</p></div></div>
+  </div>
+  <!-- iOS scrim -->
+  <div class="ios-scrim"></div>
+  <!-- iOS passkey sheet -->
+  <div class="ios-sheet">
+    <div class="ios-handle"></div>
+    <div class="ios-hdr">
+      <span class="ios-site">kueski.com</span>
+      <p class="ios-ttl">Iniciar sesión en Kueski</p>
+    </div>
+    <div class="ios-user-row">
+      <div class="ios-av">K</div>
+      <div>
+        <p class="ios-un">María García</p>
+        <p class="ios-ue">maria.garcia@email.com</p>
+      </div>
+    </div>
+    <div class="ios-bio-row">
+      <span class="ios-bio-lbl">Iniciar sesión con Face ID</span>
+      <!-- Face ID icon -->
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" style="color:#007AFF">
+        <path d="M4 14V6h8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 14V6h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 30v8h8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 30v8h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16.5" cy="19" r="1.8" fill="currentColor"/>
+        <circle cx="27.5" cy="19" r="1.8" fill="currentColor"/>
+        <path d="M17 27c1.2 2.5 9 2.5 10 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M22 22v-2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="ios-btns">
+      <button class="ios-btn can" onclick="goToStep(0)">Cancelar</button>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- 3. lp-android: Android biometric passkey prompt -->
+<div class="screen" id="s-lp2" style="transform:translateX(200%)">
+  <div class="sb-dark">
+    <span class="t">9:30</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;opacity:0.35;pointer-events:none;padding:12px 20px;gap:16px">
+    <div><p class="sec-title" style="font-size:20px">Qué bueno que estés por aquí</p></div>
+    <div class="pk-btn-wrap" style="opacity:0.6"><div class="pk-btn-icon"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="10" cy="14" r="7" stroke="#fff" stroke-width="2.5" fill="none"/><circle cx="10" cy="14" r="3" fill="#fff"/><path d="M17 14H26M23 14V10.5M20 14V10.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg></div><div><p class="pk-btn-title">Continuar con passkey</p></div></div>
+  </div>
+  <div class="and-scrim"></div>
+  <div class="and-sheet">
+    <div class="and-handle"></div>
+    <p class="and-title">Iniciar sesión en<br><strong>kueski.com</strong></p>
+    <div class="and-fp-wrap">
+      <div class="and-fp-ring"></div>
+      <div class="and-fp-bg">
+        <svg viewBox="0 0 32 32" fill="#1E88E5" width="48" height="48">
+          <path d="M15.76 4C9.74 4 5.03 8.85 4.91 14.6a.75.75 0 1 0 1.5.05C6.51 9.95 10.85 6 15.76 6c.24 0 .47.01.7.03a.75.75 0 1 0 .12-1.5A11.7 11.7 0 0 0 15.76 4Z"/>
+          <path d="M19.87 4.81a.75.75 0 0 0-.53 1.41c2.42.99 4.32 3.03 5.1 5.6a.75.75 0 1 0 1.44-.43 9.88 9.88 0 0 0-6-6.58ZM26.76 14.78a.75.75 0 0 0-.86 1.21l.28 1.6c.27 1.5.27 3.04.01 4.54a.75.75 0 1 0 1.48.26 15 15 0 0 0-.01-5.02l-.28-1.59a.75.75 0 0 0-.62-.6ZM7.23 17.46a.75.75 0 0 0-.86 1.19c.1.8.1 1.6 0 2.39a.75.75 0 1 0 1.49.18 9.4 9.4 0 0 0 0-2.86.75.75 0 0 0-.63-.71ZM11.71 9.37a7.84 7.84 0 0 1 4.14-1.37c3.45 0 6.38 2.54 6.87 5.96l.36 2.53a.75.75 0 1 1-1.49.21L21.23 14c-.35-2.43-2.44-4.24-4.9-4.24-1.11 0-2.12.36-2.94.97a.75.75 0 1 1-.68-1.36Z"/>
+          <path d="M10.8 11.65a.75.75 0 0 1 .39 1.4c-.35.78-.49 1.7-.36 2.64l.34 2.36c.14 1.01.11 2.04-.09 3.04l-.87 3.65a.75.75 0 1 1-1.46-.35l.86-3.62c.15-.77.17-1.57.06-2.35l-.34-2.36c-.19-1.33.01-2.62.5-3.76a.75.75 0 0 1 .97-.65ZM22.39 18.68a.75.75 0 0 1 .75.7c-.03.56-.1 1.12-.22 1.67l-.83 4.13a.75.75 0 1 1-1.47-.3l.83-4.13c.09-.44.15-.9.17-1.35a.75.75 0 0 1 .77-.72ZM12.9 14.48a2.83 2.83 0 0 1 2.94-2.48c1.45 0 2.69 1.05 2.93 2.48l.54 3.23c.07.43.1.87.1 1.3a.75.75 0 1 1-1.5-.01c0-.35-.02-.7-.08-1.04l-.54-3.23c-.14-.73-.78-1.23-1.45-1.23-.65 0-1.28.48-1.38 1.23a.75.75 0 1 1-1.49-.22Z"/>
+          <path d="M14.11 16.68a.75.75 0 0 1 1.15.44l.08.49c.12.69.1 1.39-.04 2.07l-.28 1.25a.75.75 0 1 1-1.47-.33l.28-1.25c.1-.5.11-.99.05-1.49l-.08-.49a.75.75 0 0 1 .31-.69Z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="and-sub">Toca el sensor de huella para<br>continuar como María García</p>
+    <button class="and-cancel-btn" onclick="goToStep(0)">Cancelar</button>
+  </div>
+</div>
+
+<!-- 4. lp-success: Logged in -->
+<div class="screen" id="s-lp3" style="transform:translateX(300%)">
+  <div class="sb-dark">
+    <span class="t">9:31</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <div class="succ-wrap">
+    <div class="succ-ico gn">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M10 20l8 8 12-16" stroke="#008246" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <p class="succ-hl">¡Hola, María!</p>
+    <p class="succ-body">Sesión iniciada con tu passkey. Sin contraseña, sin preocupaciones.</p>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+      <span class="tag t-g">Autenticación FIDO2</span>
+      <span class="tag t-b">Sin contraseña</span>
+    </div>
+  </div>
+  <div class="sf">
+    <button class="btn btn-ok">Ir al inicio</button>
+  </div>
+  <div class="nb"><span></span></div>
+</div>
+
+
+<!-- ══════════ ENROLL FLOW ══════════ -->
+
+<!-- 5. ep-account: My Account with passkeys entry -->
+<div class="screen" id="s-ep0" style="display:none">
+  <div class="sb-and">
+    <span class="t">19:21</span>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0" stroke="#141c22" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#141c22"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#141c22" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="10" height="7" rx="1" fill="#141c22" stroke="none"/></svg>
+    </div>
+  </div>
+  <div class="acct-hdr"><p class="acct-title">Cuenta</p></div>
+  <div class="acct-body">
+    <p class="acct-slbl">Información personal</p>
+    <div class="acct-row">
+      <div class="acct-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg></div>
+      <span class="acct-lbl">Datos de contacto</span>
+      <div class="acct-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="acct-row">
+      <div class="acct-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></div>
+      <span class="acct-lbl">Estados de cuenta</span>
+      <div class="acct-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <p class="acct-slbl">General</p>
+    <div class="acct-row hi" onclick="goToStep(1)">
+      <div class="acct-ico" style="color:#0069f1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="12" r="5" /><circle cx="8" cy="12" r="2"/><path d="M13 12h8M19 12v-3M17 12v-3"/></svg></div>
+      <span class="acct-lbl">Llaves de acceso</span>
+      <span class="acct-badge">NUEVO</span>
+      <div class="acct-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="acct-row">
+      <div class="acct-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+      <span class="acct-lbl">Acerca de Kueski</span>
+      <div class="acct-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="acct-row">
+      <div class="acct-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
+      <span class="acct-lbl">Cerrar sesión</span>
+      <div class="acct-chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+  </div>
+  <!-- Bottom nav -->
+  <div class="bot-nav">
+    <div class="bni on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span class="lbl">Inicio</span></div>
+    <div class="bni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><span class="lbl">Explorar</span></div>
+    <div class="bni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><circle cx="17.5" cy="17.5" r="2.5"/></svg><span class="lbl">Pagar</span></div>
+    <div class="bni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span class="lbl">Actividad</span></div>
+    <div class="bni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="lbl">Cuenta</span></div>
+  </div>
+</div>
+
+<!-- 6. ep-intro: Passkey intro/benefits -->
+<div class="screen" id="s-ep1" style="display:none">
+  <div class="sb-light">
+    <span class="t">19:22</span><div class="cam" style="background:#141c22;border-color:#333"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#141c22" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#141c22"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#141c22" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="10" height="7" rx="1" fill="#141c22" stroke="none"/></svg>
+    </div>
+  </div>
+  <div class="sh">
+    <button class="back-btn" onclick="goToStep(0)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Volver
+    </button>
+  </div>
+  <div class="sm">
+    <div class="pk-icon-c">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <circle cx="14" cy="20" r="10" stroke="#0069f1" stroke-width="3" fill="none"/>
+        <circle cx="14" cy="20" r="4" fill="#0069f1"/>
+        <path d="M24 20H38M34 20V15M31 20V15" stroke="#0069f1" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <p class="sec-title">Llaves de acceso</p>
+      <p class="sec-sub">Inicia sesión con tu huella o Face ID. Sin contraseñas, sin riesgos.</p>
+    </div>
+    <div>
+      <div class="pk-ben">
+        <div class="pk-bi bl"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
+        <div><p class="pk-bt">Sin contraseñas</p><p class="pk-bd">Tu huella dactilar o Face ID reemplaza la contraseña por completo.</p></div>
+      </div>
+      <div class="pk-ben">
+        <div class="pk-bi gr"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><p class="pk-bt">Protección contra phishing</p><p class="pk-bd">Las passkeys son únicas por sitio. No se pueden robar ni reutilizar.</p></div>
+      </div>
+      <div class="pk-ben">
+        <div class="pk-bi pu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18" stroke-width="2.5"/></svg></div>
+        <div><p class="pk-bt">En todos tus dispositivos</p><p class="pk-bd">Sincronizada con iCloud Keychain o Google Password Manager.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="sf">
+    <button class="btn btn-p" onclick="goToStep(2)">Crear llave de acceso</button>
+    <button class="btn btn-g">Más tarde</button>
+  </div>
+  <div class="nb"><span></span></div>
+</div>
+
+<!-- 7. ep-ios: iOS passkey save sheet -->
+<div class="screen" id="s-ep2" style="display:none">
+  <div class="sb-light">
+    <span class="t">19:22</span><div class="cam" style="background:#141c22;border-color:#333"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0" stroke="#141c22" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#141c22"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#141c22" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="10" height="7" rx="1" fill="#141c22" stroke="none"/></svg>
+    </div>
+  </div>
+  <!-- Dimmed intro bg -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px 20px;opacity:0.3;pointer-events:none">
+    <div class="pk-icon-c" style="width:60px;height:60px"><svg width="30" height="30" viewBox="0 0 40 40" fill="none"><circle cx="14" cy="20" r="10" stroke="#0069f1" stroke-width="3" fill="none"/><circle cx="14" cy="20" r="4" fill="#0069f1"/><path d="M24 20H38" stroke="#0069f1" stroke-width="3" stroke-linecap="round"/></svg></div>
+    <p style="font-size:18px;font-weight:700;color:#141c22">Llaves de acceso</p>
+  </div>
+  <div class="ios-scrim"></div>
+  <!-- iOS save passkey sheet -->
+  <div class="ios-sheet">
+    <div class="ios-handle"></div>
+    <div class="ios-hdr">
+      <span class="ios-site">kueski.com</span>
+      <p class="ios-ttl">Guardar una llave de acceso</p>
+    </div>
+    <div class="ios-user-row">
+      <div class="ios-av">K</div>
+      <div>
+        <p class="ios-un">María García</p>
+        <p class="ios-ue">maria.garcia@email.com</p>
+      </div>
+    </div>
+    <div class="ios-bio-row">
+      <span class="ios-bio-lbl">Guardar con Face ID</span>
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" style="color:#007AFF">
+        <path d="M4 14V6h8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 14V6h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 30v8h8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 30v8h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16.5" cy="19" r="1.8" fill="currentColor"/>
+        <circle cx="27.5" cy="19" r="1.8" fill="currentColor"/>
+        <path d="M17 27c1.2 2.5 9 2.5 10 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M22 22v-2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div style="padding:0 20px 10px"><p style="font-size:13px;color:#636366;font-family:-apple-system,sans-serif;line-height:1.5">La llave de acceso se guardará en iCloud Keychain y estará disponible en todos tus dispositivos Apple.</p></div>
+    <div class="ios-btns">
+      <button class="ios-btn pri" onclick="goToStep(3)">Continuar</button>
+      <button class="ios-btn can" onclick="goToStep(1)">Cancelar</button>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- 8. ep-success: Passkey enrolled -->
+<div class="screen" id="s-ep3" style="display:none">
+  <div class="sb-light">
+    <span class="t">19:23</span><div class="cam" style="background:#141c22;border-color:#333"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#141c22" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#141c22"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#141c22" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#141c22" stroke="none"/></svg>
+    </div>
+  </div>
+  <div class="succ-wrap">
+    <div class="succ-ico bl">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <circle cx="14" cy="20" r="9" stroke="#0069f1" stroke-width="2.5" fill="none"/>
+        <circle cx="14" cy="20" r="4" fill="#0069f1"/>
+        <path d="M23 20H36M33 20V16.5M30 20V16.5" stroke="#0069f1" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28 27l4 4" stroke="#008246" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="34" cy="33" r="4" fill="#e6f5ee" stroke="#008246" stroke-width="2"/>
+        <path d="M31.5 33l2 2 3-3" stroke="#008246" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <p class="succ-hl">¡Llave de acceso creada!</p>
+    <p class="succ-body">Ya puedes iniciar sesión en Kueski con tu Face ID o huella dactilar, sin necesidad de contraseña.</p>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+      <span class="tag t-io">iCloud Keychain</span>
+      <span class="tag t-g">FIDO2</span>
+    </div>
+  </div>
+  <div class="sf">
+    <button class="btn btn-ok">Entendido</button>
+  </div>
+  <div class="nb"><span></span></div>
+</div>
+
+
+<!-- ══════════ SIGNUP FLOW ══════════ -->
+
+<!-- 9. sp-form: Create account with passkey -->
+<div class="screen" id="s-sp0" style="display:none">
+  <div class="sb-dark">
+    <span class="t">9:30</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <div class="sh">
+    <div class="kueski-logo" id="kl-sp0"></div>
+    <button class="close-btn" aria-label="Cerrar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="sm">
+    <div>
+      <p class="sec-title">Crea tu cuenta</p>
+      <p class="sec-sub">Regístrate sin contraseña usando passkey.</p>
+    </div>
+    <div class="fg">
+      <label class="fl" for="sp-email">Correo electrónico</label>
+      <div class="fb">
+        <span class="fi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg></span>
+        <input id="sp-email" type="email" placeholder="tu@correo.com"/>
+      </div>
+    </div>
+    <button class="btn btn-p" onclick="goToStep(1)" style="border-radius:14px;font-size:17px;padding:15px 20px;gap:10px">
+      <svg width="22" height="22" viewBox="0 0 28 28" fill="none"><circle cx="10" cy="14" r="7" stroke="#fff" stroke-width="2.5" fill="none"/><circle cx="10" cy="14" r="3" fill="#fff"/><path d="M17 14H26M23 14V10.5M20 14V10.5" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      Crear cuenta con passkey
+    </button>
+    <div class="divider-or">o</div>
+  </div>
+  <div class="sf">
+    <button class="btn btn-s">Crear con contraseña</button>
+    <button class="btn btn-g">¿Ya tienes cuenta? Inicia sesión</button>
+  </div>
+  <div class="nb"><span></span></div>
+</div>
+
+<!-- 10. sp-ios: iOS passkey creation during signup -->
+<div class="screen" id="s-sp1" style="display:none">
+  <div class="sb-dark">
+    <span class="t">9:30</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:12px 20px;gap:16px;opacity:0.3;pointer-events:none">
+    <div><p class="sec-title" style="font-size:20px">Crea tu cuenta</p><p class="sec-sub" style="font-size:14px">Regístrate sin contraseña usando passkey.</p></div>
+    <div class="fg"><label class="fl">Correo electrónico</label><div class="fb"><span class="fi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg></span><input style="pointer-events:none" value="maria.garcia@email.com" readonly/></div></div>
+  </div>
+  <div class="ios-scrim"></div>
+  <div class="ios-sheet">
+    <div class="ios-handle"></div>
+    <div class="ios-hdr">
+      <span class="ios-site">kueski.com</span>
+      <p class="ios-ttl">Guardar una llave de acceso para kueski.com</p>
+    </div>
+    <div class="ios-user-row">
+      <div class="ios-av" style="background:#384550">M</div>
+      <div>
+        <p class="ios-un">maria.garcia</p>
+        <p class="ios-ue">maria.garcia@email.com</p>
+      </div>
+    </div>
+    <div class="ios-bio-row">
+      <span class="ios-bio-lbl">Guardar con Face ID</span>
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" style="color:#007AFF">
+        <path d="M4 14V6h8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 14V6h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 30v8h8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 30v8h-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="16.5" cy="19" r="1.8" fill="currentColor"/>
+        <circle cx="27.5" cy="19" r="1.8" fill="currentColor"/>
+        <path d="M17 27c1.2 2.5 9 2.5 10 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M22 22v-2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div style="padding:0 20px 10px"><p style="font-size:13px;color:#636366;font-family:-apple-system,sans-serif;line-height:1.5">La llave de acceso se sincronizará con iCloud Keychain en todos tus dispositivos.</p></div>
+    <div class="ios-btns">
+      <button class="ios-btn pri" onclick="goToStep(3)">Continuar</button>
+      <button class="ios-btn can" onclick="goToStep(0)">Cancelar</button>
+    </div>
+    <div style="height:8px"></div>
+  </div>
+</div>
+
+<!-- 11. sp-android: Android passkey creation during signup -->
+<div class="screen" id="s-sp2" style="display:none">
+  <div class="sb-dark">
+    <span class="t">9:30</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:12px 20px;gap:16px;opacity:0.3;pointer-events:none">
+    <div><p class="sec-title" style="font-size:20px">Crea tu cuenta</p><p class="sec-sub" style="font-size:14px">Regístrate sin contraseña usando passkey.</p></div>
+    <div class="fg"><label class="fl">Correo electrónico</label><div class="fb"><input style="pointer-events:none;padding-left:16px" value="maria.garcia@email.com" readonly/></div></div>
+  </div>
+  <div class="and-scrim"></div>
+  <div class="and-sheet">
+    <div class="and-handle"></div>
+    <p class="and-title">Guardar passkey en<br><strong>kueski.com</strong></p>
+    <div class="and-fp-wrap">
+      <div class="and-fp-ring"></div>
+      <div class="and-fp-bg">
+        <svg viewBox="0 0 32 32" fill="#1E88E5" width="48" height="48">
+          <path d="M15.76 4C9.74 4 5.03 8.85 4.91 14.6a.75.75 0 1 0 1.5.05C6.51 9.95 10.85 6 15.76 6c.24 0 .47.01.7.03a.75.75 0 1 0 .12-1.5A11.7 11.7 0 0 0 15.76 4Z"/>
+          <path d="M19.87 4.81a.75.75 0 0 0-.53 1.41c2.42.99 4.32 3.03 5.1 5.6a.75.75 0 1 0 1.44-.43 9.88 9.88 0 0 0-6-6.58ZM26.76 14.78a.75.75 0 0 0-.86 1.21l.28 1.6c.27 1.5.27 3.04.01 4.54a.75.75 0 1 0 1.48.26 15 15 0 0 0-.01-5.02l-.28-1.59a.75.75 0 0 0-.62-.6ZM11.71 9.37a7.84 7.84 0 0 1 4.14-1.37c3.45 0 6.38 2.54 6.87 5.96l.36 2.53a.75.75 0 1 1-1.49.21L21.23 14c-.35-2.43-2.44-4.24-4.9-4.24-1.11 0-2.12.36-2.94.97a.75.75 0 1 1-.68-1.36Z"/>
+          <path d="M10.8 11.65a.75.75 0 0 1 .39 1.4c-.35.78-.49 1.7-.36 2.64l.34 2.36c.14 1.01.11 2.04-.09 3.04l-.87 3.65a.75.75 0 1 1-1.46-.35l.86-3.62c.15-.77.17-1.57.06-2.35l-.34-2.36c-.19-1.33.01-2.62.5-3.76a.75.75 0 0 1 .97-.65Z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="and-sub">Usa tu huella para crear y guardar<br>tu passkey en Google Password Manager</p>
+    <button class="and-cancel-btn" onclick="goToStep(0)">Cancelar</button>
+  </div>
+</div>
+
+<!-- 12. sp-success: Account created with passkey -->
+<div class="screen" id="s-sp3" style="display:none">
+  <div class="sb-dark">
+    <span class="t">9:31</span><div class="cam"></div>
+    <div class="si">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="#fff"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#fff" stroke="none"/></svg>
+    </div>
+  </div>
+  <div class="succ-wrap">
+    <div style="position:relative;width:80px;height:80px">
+      <div class="succ-ico gn" style="width:80px;height:80px">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M10 20l8 8 12-16" stroke="#008246" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <p class="succ-hl">¡Cuenta creada!</p>
+    <p class="succ-body">Tu passkey está lista. Puedes iniciar sesión en Kueski desde cualquier dispositivo con tu biometría.</p>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+      <span class="tag t-b">Passkey activa</span>
+      <span class="tag t-g">Cuenta verificada</span>
+    </div>
+  </div>
+  <div class="sf">
+    <button class="btn btn-ok">Empezar</button>
+  </div>
+  <div class="nb"><span></span></div>
+</div>
+
+</div><!-- /slider -->
+</div><!-- /phone-screen -->
+</div><!-- /phone -->
+</div><!-- /phone-col -->
+
+<div class="copy-toast" id="copy-toast">Copiado</div>
+
+<script>
+// ── Kueski logo SVG ──
+var KLOGO = '<svg width="119" height="28" viewBox="0 0 119 28" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#kl-c)"><path d="M119.001 25.6325C119.004 26.0879 118.871 26.534 118.62 26.9141C118.369 27.2942 118.01 27.5913 117.589 27.7676C117.169 27.944 116.705 27.9917 116.258 27.9046C115.81 27.8176 115.398 27.5998 115.074 27.2788C114.751 26.9578 114.53 26.548 114.44 26.1016C114.35 25.6551 114.395 25.192 114.568 24.7709C114.742 24.3498 115.037 23.9898 115.417 23.7364C115.796 23.4831 116.241 23.3478 116.698 23.3478C117 23.3441 117.3 23.4005 117.58 23.5138C117.86 23.6271 118.115 23.795 118.329 24.0077C118.544 24.2204 118.714 24.4736 118.829 24.7526C118.944 25.0316 119.003 25.3307 119.001 25.6325ZM118.577 25.6325C118.576 25.2616 118.465 24.8994 118.258 24.5915C118.051 24.2836 117.757 24.0439 117.413 23.9027C117.07 23.7614 116.692 23.725 116.328 23.7979C115.964 23.8709 115.629 24.05 115.367 24.3125C115.105 24.5751 114.926 24.9094 114.854 25.2733C114.782 25.6371 114.82 26.0141 114.962 26.3566C115.104 26.6991 115.345 26.9919 115.654 27.1978C115.963 27.4037 116.326 27.5137 116.698 27.5137C116.946 27.5175 117.193 27.4714 117.423 27.3782C117.654 27.2851 117.863 27.1467 118.039 26.9712C118.215 26.7958 118.354 26.5869 118.447 26.357C118.541 26.127 118.587 25.8806 118.583 25.6325H118.577Z" fill="#0075FF"/><path d="M54.286 13.2346H51.3396C51.231 13.2334 51.1233 13.2542 51.023 13.2958C50.9227 13.3373 50.8319 13.3987 50.7561 13.4763C50.6802 13.5539 50.6209 13.6461 50.5817 13.7472C50.5426 13.8483 50.5244 13.9563 50.5282 14.0647V22.9085C49.5588 23.8481 48.3383 24.7181 47.0364 24.7181C45.5399 24.7181 44.5106 23.8033 44.5106 21.5637V14.0431C44.5118 13.9359 44.4913 13.8296 44.4505 13.7304C44.4097 13.6313 44.3494 13.5413 44.273 13.4659C44.1967 13.3905 44.106 13.3312 44.0063 13.2914C43.9066 13.2517 43.7999 13.2324 43.6926 13.2346H40.7328C40.3197 13.3307 40.2291 13.3901 40.153 13.4656C40.0769 13.5411 40.0169 13.6312 39.9765 13.7304C39.9361 13.8296 39.9163 13.936 39.9181 14.0431V21.567C39.9181 26.0313 42.4205 27.884 45.9539 27.884C47.9492 27.884 49.3061 27.0539 50.5348 26.0362V27.0838C50.531 27.1922 50.5492 27.3002 50.5884 27.4013C50.6276 27.5024 50.6869 27.5946 50.7627 27.6722C50.8386 27.7498 50.9294 27.8112 51.0297 27.8527C51.13 27.8943 51.2377 27.9151 51.3463 27.9139H54.286C54.5012 27.8931 54.6008 27.8512 54.7005 27.8094C54.7906 27.7478 54.8658 27.6703 54.941 27.5927C54.9997 27.5008 55.0383 27.4C55.0908 27.0838V14.0597C55.0942 13.9523 55.0758 13.8452 55.0368 13.745C54.9978 13.6448 54.939 13.5535 54.8639 13.4765C54.7888 13.3995 54.6989 13.3384 54.5996 13.2968C54.5004 13.2553 54.3937 13.2341 54.286 13.2346Z" fill="#0075FF"/><path d="M28.1072 19.2582C29.6503 19.2582 30.3919 18.6173 30.9223 17.4884L32.171 14.681C32.3316 14.3211 32.5912 14.014 32.9197 13.7956C33.2482 13.5772 33.6321 13.4565 34.0267 13.4475H36.4626C37.1527 13.4475 37.2358 13.9838 36.9132 14.6794L35.2405 18.3733C34.6885 19.552 33.626 20.4917 32.4853 20.7324C33.5777 21.0528 34.4507 21.8049 35.2405 23.0915L37.4403 26.6841C37.8627 27.3847 37.6798 27.9193 36.9881 27.9193H34.5571C33.7074 27.9193 32.9924 27.3847 32.5701 26.6841L30.9223 23.9747C30.2106 22.7993 29.3028 22.2349 28.1072 22.2349V27.1141C28.0532 27.4222 27.9567 27.6095 27.8828 27.6846C27.809 27.7598 27.7207 27.8193 27.6232 27.8596C27.5258 27.8999 27.4212 27.9202 27.3158 27.9193H24.2929C24.1871 27.9205 24.0822 27.9003 23.9844 27.8602C23.8866 27.82 23.7979 27.7605 23.7236 27.6854C23.6492 27.6103 23.5908 27.521 23.5518 27.4228C23.5128 27.3247 23.4939 27.2197 23.4964 27.1141V10.1803C23.4935 10.0746 23.512 9.9694 23.5509 9.87104C23.5897 9.77269 23.6481 9.6832 23.7225 9.60797C23.7969 9.53274 23.8858 9.47333 23.9838 9.43331C24.0819 9.39329 24.187 9.37348 24.2929 9.37509H27.3158C27.7211 9.47455 27.8094 9.53407 27.8834 9.60927C27.9573 9.68448 28.0152 9.77383 28.0537 9.87195C28.0922 9.97007 28.1104 10.075 28.1072 10.1803V19.2582Z" fill="#0075FF"/></g><path d="M17.9508 16.2145C17.9508 16.6117 17.1892 23.4965 16.8292 26.8628C16.7242 27.8558 15.7209 27.9204 15.4509 27.9204H3.8583C2.65171 27.9204 2.22174 27.3924 2.10508 26.7619C1.98175 26.0999 1.34179 19.6271 1.02181 17.373L0.910156 16.2525C0.910156 15.6948 1.30346 15.2148 1.85009 15.2148H16.9508C17.0833 15.2148 17.2144 15.2409 17.3366 15.2917C17.4588 15.3424 17.5696 15.4167 17.6626 15.5104C17.7557 15.604 17.829 15.715 17.8785 15.837C17.928 15.959 17.9525 16.0896 17.9508 16.2211V16.2145Z" fill="url(#kl-g0)"/><path d="M17.9583 9.38037H13.1544C13.1877 8.19719 13.7414 7.84041 14.8704 7.12188L17.5309 5.42095C17.8893 5.20626 18.1883 4.90555 18.4006 4.54618C18.6129 4.1868 18.7317 3.78016 18.7464 3.36325V0.83426C18.7464 0.115723 18.2243-0.0767724 17.5426 0.362979L14.0141 2.63475C12.752 3.45286 12.0187 4.36389 11.6862 5.48733C11.4617 4.30581 10.5472 3.19896 9.39317 2.61816L5.90129 0.874087C5.21621 0.542199 4.69409 0.625171 4.6891 1.34039L4.68079 3.86938C4.68351 4.27081 4.79739 4.66367 5.00985 5.00455C5.2223 5.34544 5.52506 5.62106 5.88466 5.80096L8.50856 7.09865C9.59104 7.64294 10.2146 7.84871 10.2379 9.37872H0.781517C0.326954 9.37872 0 9.72 0 10.152V13.2386C0 13.6703 0.326954 14.0086 0.781517 14.0086H17.9583C18.413 14.0086 18.7448 13.6703 18.7448 13.2386V10.152C18.7448 9.72 18.413 9.38037 17.9583 9.38037Z" fill="url(#kl-g1)"/><defs><linearGradient id="kl-g0" x1="3.35" y1="15.23" x2="12.27" y2="31.28" gradientUnits="userSpaceOnUse"><stop stop-color="#25A2FA"/><stop offset=".48" stop-color="#0075FF"/><stop offset="1" stop-color="#3F58EA"/></linearGradient><linearGradient id="kl-g1" x1="17.40" y1="13.96" x2="1.83" y2="-0.52" gradientUnits="userSpaceOnUse"><stop stop-color="#00BBE9"/><stop offset=".18" stop-color="#02CDCE"/><stop offset=".37" stop-color="#1BDD9A"/><stop offset=".55" stop-color="#38EF5F"/><stop offset=".82" stop-color="#69F950"/><stop offset="1" stop-color="#95FF4F"/></linearGradient><clipPath id="kl-c"><rect width="118.972" height="27.9193" fill="white" transform="translate(.027)"/></clipPath></defs></svg>';
+
+// ── State ──
+var FLOWS = {
+  login:  { swEl: 'sw-login',  tabs: ['sw-lp0','sw-lp1','sw-lp2','sw-lp3'], screens: ['s-lp0','s-lp1','s-lp2','s-lp3'] },
+  enroll: { swEl: 'sw-enroll', tabs: ['sw-ep0','sw-ep1','sw-ep2','sw-ep3'], screens: ['s-ep0','s-ep1','s-ep2','s-ep3'] },
+  signup: { swEl: 'sw-signup', tabs: ['sw-sp0','sw-sp1','sw-sp2','sw-sp3'], screens: ['s-sp0','s-sp1','s-sp2','s-sp3'] }
+};
+
+var INFO = {
+  login: [
+    { label: 'Pantalla de login',
+      text: 'El usuario ve la opción "Continuar con passkey" en lugar de email/contraseña. Al tocarla, el navegador invoca <code>navigator.credentials.get()</code> con opciones FIDO2.',
+      tags: [['WebAuthn API','t-b'],['navigator.credentials.get()','t-gr'],['FIDO2','t-pu']] },
+    { label: 'iOS Face ID',
+      text: 'iOS presenta automáticamente el sheet de passkey. Muestra la cuenta guardada en iCloud Keychain. El usuario autentica con Face ID — sin tocar ningún botón.',
+      tags: [['iOS 16+','t-io'],['iCloud Keychain','t-io'],['Face ID','t-gr']] },
+    { label: 'Android Fingerprint',
+      text: 'Android muestra el bottom sheet de Google Password Manager o el sistema biométrico. El usuario autentica con huella dactilar. WebAuthn devuelve la assertion al servidor.',
+      tags: [['Android 9+','t-an'],['Google Pass. Mgr','t-an'],['FIDO2','t-pu']] },
+    { label: 'Sesión iniciada',
+      text: 'El servidor verifica la firma de la assertion con la clave pública almacenada. Login completo — sin contraseña, sin riesgo de phishing.',
+      tags: [['Server verify','t-b'],['Sin contraseña','t-g'],['Signature check','t-gr']] }
+  ],
+  enroll: [
+    { label: 'Mi cuenta',
+      text: 'Punto de entrada para enrollar una passkey post-login. Se agrega la fila "Llaves de acceso" bajo General. El badge NUEVO aumenta la discoverability.',
+      tags: [['Post-login','t-g'],['AccountScreen','t-gr'],['Opt-in','t-b']] },
+    { label: 'Intro passkey',
+      text: 'Pantalla educativa que explica los beneficios: sin contraseña, protección anti-phishing y sincronización multi-dispositivo. El CTA dispara <code>navigator.credentials.create()</code>.',
+      tags: [['Onboarding','t-b'],['PasskeyIntroScreen','t-gr'],['WebAuthn create','t-pu']] },
+    { label: 'iOS — Guardar passkey',
+      text: 'iOS muestra el sheet nativo para guardar la credential en iCloud Keychain. Requiere confirmación biométrica (Face ID / Touch ID). La passkey se sincroniza entre dispositivos Apple.',
+      tags: [['iCloud Keychain','t-io'],['iOS 16+','t-io'],['Credential create','t-pu']] },
+    { label: 'Passkey enrollada',
+      text: 'La clave pública está almacenada en el servidor. El dispositivo retiene la clave privada en el Secure Enclave. Futuros logins no requerirán contraseña.',
+      tags: [['Enrolled','t-g'],['Secure Enclave','t-gr'],['FIDO2','t-pu']] }
+  ],
+  signup: [
+    { label: 'Crear cuenta',
+      text: 'Registro sin contraseña. Solo se requiere email para identificar la cuenta. Al tocar "Crear cuenta con passkey" se inicia el flujo WebAuthn de creación de credential.',
+      tags: [['Registration','t-b'],['No password','t-g'],['navigator.credentials.create()','t-gr']] },
+    { label: 'iOS — Face ID',
+      text: 'iOS crea una nueva passkey credential (par de claves pública/privada) vinculada al email del usuario. La clave privada queda en el Secure Enclave, nunca sale del dispositivo.',
+      tags: [['FIDO2 credential','t-pu'],['iOS','t-io'],['Secure Enclave','t-gr']] },
+    { label: 'Android — Huella',
+      text: 'Android crea y guarda la passkey en Google Password Manager. Disponible en otros dispositivos Android del usuario autenticados en la misma cuenta Google.',
+      tags: [['FIDO2','t-pu'],['Android','t-an'],['Google Pass. Mgr','t-an']] },
+    { label: 'Cuenta creada',
+      text: 'Cuenta y passkey activas. El servidor almacena solo la clave pública. El usuario puede iniciar sesión con biometría desde cualquier dispositivo enrollado.',
+      tags: [['Registered','t-g'],['Cross-device','t-b'],['Passkey activa','t-gr']] }
+  ]
+};
+
+var currentFlow = 'login';
+var currentStep = 0;
+
+function goToFlow(flow) {
+  if (flow === currentFlow) return;
+  // Snap old flow screens off-screen and hide
+  var oldFlow = FLOWS[currentFlow];
+  oldFlow.screens.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.style.transition = 'none'; el.style.display = 'none'; }
+  });
+  document.getElementById(oldFlow.swEl).style.display = 'none';
+
+  currentFlow = flow;
+  currentStep = 0;
+
+  // Show new flow
+  document.getElementById(FLOWS[flow].swEl).style.display = 'flex';
+
+  // Initialize positions without animation
+  FLOWS[flow].screens.forEach(function(id, idx) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.transition = 'none';
+    el.style.display = 'flex';
+    el.style.transform = 'translateX(' + (idx * 100) + '%)';
+  });
+
+  // Update flow tabs
+  ['login','enroll','signup'].forEach(function(f) {
+    document.getElementById('ft-' + f).classList.toggle('active', f === flow);
+  });
+
+  updateSidebar();
+}
+
+function goToStep(step) {
+  currentStep = step;
+  var flow = FLOWS[currentFlow];
+  flow.screens.forEach(function(id, idx) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.transition = 'transform 380ms cubic-bezier(0.4,0,0.2,1)';
+    el.style.transform = 'translateX(' + ((idx - step) * 100) + '%)';
+  });
+  updateSidebar();
+}
+
+function updateSidebar() {
+  var flow = FLOWS[currentFlow];
+  // Step buttons
+  flow.tabs.forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('active', i === currentStep);
+  });
+  // Info cards
+  var infoData = INFO[currentFlow];
+  var bar = document.getElementById('info-bar');
+  bar.innerHTML = '';
+  infoData.forEach(function(item, i) {
+    var div = document.createElement('div');
+    div.className = 'ic' + (i !== currentStep ? ' dim' : '');
+    var tagsHtml = item.tags.map(function(t){ return '<span class="tag '+t[1]+'">'+t[0]+'</span>'; }).join('');
+    div.innerHTML = '<strong>' + (i === currentStep ? '▶ Estado actual' : 'Paso ' + (i+1)) + '</strong>' + item.text + '<br>' + tagsHtml;
+    bar.appendChild(div);
+  });
+}
+
+function copyImport(el, text) {
+  navigator.clipboard.writeText(text).catch(function(){});
+  var toast = document.getElementById('copy-toast');
+  toast.classList.add('show');
+  setTimeout(function(){ toast.classList.remove('show'); }, 2000);
+}
+
+// Resize phone to fit viewport height
+function resizePhone() {
+  var phone = document.getElementById('phone-frame');
+  if (!phone) return;
+  var availH = window.innerHeight - 40;
+  var scale = Math.min(1, availH / 844);
+  phone.style.transform = 'scale(' + scale + ')';
+  phone.style.transformOrigin = 'center center';
+}
+
+// Inject Kueski logos
+window.addEventListener('DOMContentLoaded', function() {
+  ['kl-lp0','kl-sp0'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = KLOGO;
+  });
+  // Init
+  document.getElementById('sw-enroll').style.display = 'none';
+  document.getElementById('sw-signup').style.display = 'none';
+  updateSidebar();
+  resizePhone();
+});
+window.addEventListener('resize', resizePhone);
+</script>
+</body>
+</html>
