@@ -10,7 +10,6 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #f0f4f8;
     display: flex;
-<<<<<<< HEAD
     height: 100vh;
     overflow: hidden;
   }
@@ -23,13 +22,6 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-=======
-    align-items: flex-start;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 40px 16px;
-    gap: 40px;
->>>>>>> 1d3bd4b (feat: initial flow handoff hub)
   }
 
   /* ── Phone frame ── */
@@ -334,7 +326,6 @@
   .curp-counter { font-size: 12px; color: #66727d; flex-shrink: 0; }
 
   /* ── Sidebar ── */
-<<<<<<< HEAD
   /* Left panel — appears first via CSS order even though second in DOM */
   .sidebar {
     order: 1;
@@ -351,12 +342,6 @@
   }
   .sidebar::-webkit-scrollbar { width: 4px; }
   .sidebar::-webkit-scrollbar-thumb { background: #e0e7ef; border-radius: 2px; }
-=======
-  .sidebar {
-    display: flex; flex-direction: column; gap: 16px;
-    padding-top: 60px; width: 200px; flex-shrink: 0;
-  }
->>>>>>> 1d3bd4b (feat: initial flow handoff hub)
   .anno { display: flex; flex-direction: column; gap: 4px; }
   .anno-label {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
@@ -420,7 +405,6 @@
   }
   .sw-btn:hover { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
   .sw-btn.active { border-color: #0069f1; color: #0069f1; background: #eef4ff; }
-<<<<<<< HEAD
 
   /* ── Dev Handoff section ──────────────────────────────────── */
   .handoff {
@@ -480,18 +464,12 @@
     transition: opacity 200ms, transform 200ms; z-index: 1000;
   }
   .copy-toast-pi.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-=======
->>>>>>> 1d3bd4b (feat: initial flow handoff hub)
 </style>
 </head>
 <body>
 
-<<<<<<< HEAD
 <!-- ─────────────────────── Phone column ────────────────────────── -->
 <div class="phone-col">
-=======
-<!-- ───────────────────────── Phone ───────────────────────────── -->
->>>>>>> 1d3bd4b (feat: initial flow handoff hub)
 <div class="phone">
   <div class="phone-screen" id="phoneScreen">
 
@@ -793,7 +771,6 @@
       "inicia sesión" link
     </span>
   </div>
-<<<<<<< HEAD
 
 <!-- ───────────────────── Dev Handoff ─────────────────────────── -->
 <section class="handoff">
@@ -814,8 +791,7 @@
           <tr><td class="prop-name">$step</td><td class="prop-type">number</td><td class="prop-default">2</td><td>Step number shown in header</td></tr>
           <tr><td class="prop-name">$totalSteps</td><td class="prop-type">number</td><td class="prop-default">5</td><td>Total steps shown in header</td></tr>
           <tr><td class="prop-name">onSubmit</td><td class="prop-type">(data: PersonalInfoData) =&gt; void</td><td class="prop-default">—</td><td>Fires on Continuar — host should trigger the CURP lookup here</td></tr>
-          <tr><td class="prop-name">onConfirmCurp</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires when user taps Confirmar on the error sheet</td></tr>
-          <tr><td class="prop-name">onLoginRedirect</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires when user taps "inicia sesión" in the CURP error message</td></tr>
+          <tr><td class="prop-name">onLoginRedirect</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Fires when user taps "Iniciar sesión" on the CURP error sheet</td></tr>
           <tr><td class="prop-name">onBack</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Back button on the form screen</td></tr>
           <tr><td class="prop-name">onClose</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Close (×) button on the form screen</td></tr>
           <tr><td class="prop-name">$autoAdvanceDemo</td><td class="prop-type">boolean</td><td class="prop-default">true</td><td>Auto-advances loading → error after 1.8s. Set false to control state externally</td></tr>
@@ -839,9 +815,9 @@
           <tr><td class="prop-name">$state</td><td class="prop-type">'loading' | 'error'</td><td class="prop-default">'loading'</td><td>loading = spinner + buttons disabled. error = CURP field + red border + active buttons</td></tr>
           <tr><td class="prop-name">$curp</td><td class="prop-type">string</td><td class="prop-default">''</td><td>CURP string shown in the read-only field</td></tr>
           <tr><td class="prop-name">$curpMaxLength</td><td class="prop-type">number</td><td class="prop-default">18</td><td>Character limit shown in the counter</td></tr>
-          <tr><td class="prop-name">$errorMessage</td><td class="prop-type">React.ReactNode</td><td class="prop-default">—</td><td>Error text below the CURP field — accepts JSX for inline links (e.g. "inicia sesión")</td></tr>
+          <tr><td class="prop-name">$errorMessage</td><td class="prop-type">string</td><td class="prop-default">—</td><td>Error text below the CURP field, e.g. "Esta CURP ya está asociada a…"</td></tr>
           <tr><td class="prop-name">onBack</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Atrás button and scrim tap (only active when not loading)</td></tr>
-          <tr><td class="prop-name">onConfirm</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Confirmar button</td></tr>
+          <tr><td class="prop-name">onLoginRedirect</td><td class="prop-type">() =&gt; void</td><td class="prop-default">—</td><td>Iniciar sesión button — fires when primary CTA is tapped on error state</td></tr>
         </tbody>
       </table>
     </div>
@@ -851,9 +827,6 @@
 </aside><!-- /left-panel -->
 
 <div id="pi-copy-toast" class="copy-toast-pi">Copiado al portapapeles</div>
-=======
-</aside>
->>>>>>> 1d3bd4b (feat: initial flow handoff hub)
 
 <script>
   let currentState = 'form';
@@ -922,7 +895,6 @@
     const input = document.getElementById('l-password');
     input.type = input.type === 'password' ? 'text' : 'password';
   }
-<<<<<<< HEAD
 
   // Scale phone to fill viewport height
   function resizePhone() {
@@ -948,8 +920,6 @@
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2000);
   }
-=======
->>>>>>> 1d3bd4b (feat: initial flow handoff hub)
 </script>
 </body>
 </html>
