@@ -312,6 +312,15 @@ const FLOWS = [
     tags: ['auth', 'passkeys', 'fido2'],
     steps: 12,
   },
+  {
+    id: 'android-passkey-signup',
+    title: 'Android Passkey Sign-up',
+    description: 'Flujo de registro usando llave de acceso en Android. Bienvenida → selección de método → upsell de passkey → biométrico Android (Google Password Manager) → confirmación de llave creada.',
+    file: 'flows/AndroidPasskeySignupFlow/android-passkey-signup-flow-preview.html',
+    status: 'ready',
+    tags: ['auth', 'passkeys', 'android', 'fido2'],
+    steps: 5,
+  },
   /* ── Paste new flow objects here ─────────────────────────── */
 ];
 
