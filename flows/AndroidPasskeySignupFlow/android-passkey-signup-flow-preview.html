@@ -75,6 +75,15 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 /* ── Method sheet ── */
 .sheet-scrim{position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:20;pointer-events:none}
 .bottom-sheet{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;z-index:21;padding-bottom:0}
+
+/* ── s1 overlay (bottom-sheet entrance from below) ── */
+#s1{background:transparent!important}
+#scrim-s1{position:absolute;inset:0;background:rgba(0,0,0,0.4);opacity:0;transition:opacity 320ms ease;z-index:20;pointer-events:none}
+#scrim-s1.bs-active{opacity:1;pointer-events:auto}
+#bs-s1{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:28px 28px 0 0;z-index:21;transform:translateY(105%);transition:transform 400ms cubic-bezier(0.22,1,0.36,1)}
+#bs-s1.bs-active{transform:translateY(0)}
+#nb-s1{position:absolute;bottom:0;left:0;right:0;z-index:22;display:flex;justify-content:center;padding:8px 0 16px;pointer-events:none;background:transparent}
+#nb-s1 span{width:120px;height:5px;background:#141c22;border-radius:10px;opacity:.18}
 .bs-handle{width:40px;height:4px;background:#d1d8e0;border-radius:4px;margin:12px auto 0}
 .bs-logo-row{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 4px}
 .bs-title{font-size:22px;font-weight:700;color:#141c22;padding:0 20px 4px;letter-spacing:-0.01em;line-height:1.25}
@@ -304,162 +313,47 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     </div>
   </div>
   <!-- Illustration -->
-  <div class="illus-wrap">
-    <svg viewBox="0 0 366 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <!-- Sky gradient -->
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#B8D8F0"/>
-          <stop offset="100%" stop-color="#F5E6C8"/>
-        </linearGradient>
-        <linearGradient id="groundGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#D4A054"/>
-          <stop offset="100%" stop-color="#C8904A"/>
-        </linearGradient>
-      </defs>
-      <!-- Sky -->
-      <rect width="366" height="480" fill="url(#skyGrad)"/>
-      <!-- Sun -->
-      <circle cx="300" cy="80" r="38" fill="#F9C74F" opacity="0.85"/>
-      <circle cx="300" cy="80" r="50" fill="#F9C74F" opacity="0.2"/>
-      <!-- Clouds -->
-      <g opacity="0.9">
-        <ellipse cx="60" cy="75" rx="38" ry="18" fill="#fff"/>
-        <ellipse cx="90" cy="65" rx="28" ry="16" fill="#fff"/>
-        <ellipse cx="35" cy="80" rx="22" ry="14" fill="#fff"/>
-      </g>
-      <g opacity="0.85">
-        <ellipse cx="220" cy="55" rx="45" ry="20" fill="#fff"/>
-        <ellipse cx="255" cy="45" rx="30" ry="16" fill="#fff"/>
-        <ellipse cx="195" cy="60" rx="25" ry="14" fill="#fff"/>
-      </g>
-      <!-- Bird -->
-      <g stroke="#384550" stroke-width="1.5" fill="none" opacity="0.7">
-        <path d="M145 100 Q150 95 155 100"/>
-        <path d="M160 97 Q165 92 170 97"/>
-      </g>
-      <!-- Back building left (tall, terracotta) -->
-      <rect x="-5" y="140" width="85" height="340" fill="#D4735A" rx="3"/>
-      <rect x="0" y="155" width="75" height="20" fill="#C46448"/>
-      <!-- Windows left building -->
-      <rect x="10" y="175" width="16" height="20" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="35" y="175" width="16" height="20" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="57" y="175" width="16" height="20" fill="#87CEEB" rx="2" opacity="0.8"/>
-      <rect x="10" y="210" width="16" height="20" fill="#87CEEB" rx="2" opacity="0.8"/>
-      <rect x="35" y="210" width="16" height="20" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="57" y="210" width="16" height="20" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="10" y="245" width="16" height="20" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="35" y="245" width="16" height="20" fill="#87CEEB" rx="2" opacity="0.8"/>
-      <!-- Back building center (yellow) -->
-      <rect x="90" y="115" width="110" height="365" fill="#F5C842" rx="3"/>
-      <rect x="90" y="130" width="110" height="18" fill="#E8B830"/>
-      <!-- Windows center building -->
-      <rect x="103" y="155" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="133" y="155" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="163" y="155" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="103" y="195" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="133" y="195" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="163" y="195" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="103" y="235" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="133" y="235" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <!-- Door center building -->
-      <rect x="130" y="295" width="30" height="50" fill="#C46448" rx="3"/>
-      <circle cx="155" cy="322" r="2.5" fill="#F9C74F"/>
-      <!-- Back building right (teal/blue) -->
-      <rect x="215" y="155" width="160" height="325" fill="#4AADBE" rx="3"/>
-      <rect x="215" y="168" width="160" height="16" fill="#3D9BAB"/>
-      <!-- Windows right building -->
-      <rect x="230" y="192" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="263" y="192" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="296" y="192" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="329" y="192" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="230" y="232" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="263" y="232" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="296" y="232" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <rect x="329" y="232" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="230" y="272" width="20" height="26" fill="#F9E4C8" rx="2" opacity="0.9"/>
-      <rect x="263" y="272" width="20" height="26" fill="#87CEEB" rx="2" opacity="0.85"/>
-      <!-- Street / ground -->
-      <rect x="0" y="340" width="366" height="140" fill="url(#groundGrad)"/>
-      <!-- Sidewalk -->
-      <rect x="0" y="340" width="366" height="14" fill="#C8906A" opacity="0.6"/>
-      <!-- Tree left -->
-      <rect x="72" y="268" width="8" height="72" fill="#8B5E3C"/>
-      <ellipse cx="76" cy="258" rx="28" ry="32" fill="#2E8B57"/>
-      <ellipse cx="63" cy="272" rx="18" ry="22" fill="#3CB371"/>
-      <ellipse cx="90" cy="275" rx="16" ry="20" fill="#228B44"/>
-      <!-- Tree right -->
-      <rect x="298" y="280" width="8" height="60" fill="#8B5E3C"/>
-      <ellipse cx="302" cy="270" rx="26" ry="30" fill="#2E8B57"/>
-      <ellipse cx="288" cy="282" rx="16" ry="20" fill="#3CB371"/>
-      <ellipse cx="316" cy="285" rx="14" ry="18" fill="#228B44"/>
-      <!-- Person 1 - woman with red jacket (main character, center-left) -->
-      <g transform="translate(130,295)">
-        <!-- Body -->
-        <rect x="-12" y="12" width="24" height="36" fill="#C0392B" rx="4"/>
-        <!-- Legs -->
-        <rect x="-10" y="44" width="9" height="28" fill="#2C3E50" rx="3"/>
-        <rect x="1" y="44" width="9" height="28" fill="#2C3E50" rx="3"/>
-        <!-- Shoes -->
-        <ellipse cx="-6" cy="73" rx="7" ry="4" fill="#E74C3C"/>
-        <ellipse cx="5" cy="73" rx="7" ry="4" fill="#E74C3C"/>
-        <!-- Head -->
-        <circle cx="0" cy="6" r="14" fill="#FDBCB4"/>
-        <!-- Hair -->
-        <path d="M-13 4 Q-14 -8 0 -8 Q14 -8 13 4" fill="#2C3E50"/>
-        <!-- Arm holding bag -->
-        <rect x="12" y="15" width="8" height="22" fill="#C0392B" rx="3"/>
-        <!-- Bag -->
-        <rect x="18" y="28" width="16" height="16" fill="#F39C12" rx="3"/>
-        <path d="M20 28 Q26 22 32 28" stroke="#E67E22" stroke-width="1.5" fill="none"/>
-      </g>
-      <!-- Cat (small, near person) -->
-      <g transform="translate(165,340)">
-        <ellipse cx="0" cy="8" rx="9" ry="7" fill="#2C3E50"/>
-        <circle cx="0" cy="2" r="6" fill="#2C3E50"/>
-        <polygon points="-5,-2 -8,-9 -2,-5" fill="#2C3E50"/>
-        <polygon points="5,-2 8,-9 2,-5" fill="#2C3E50"/>
-        <circle cx="-2" cy="2" r="1.2" fill="#27AE60"/>
-        <circle cx="2" cy="2" r="1.2" fill="#27AE60"/>
-        <path d="M-3 6 Q0 8 3 6" stroke="#fff" stroke-width="0.8" fill="none"/>
-        <!-- tail -->
-        <path d="M9 8 Q18 2 16 14" stroke="#2C3E50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      </g>
-      <!-- Person 2 - man in blue (right side) -->
-      <g transform="translate(250,305)">
-        <rect x="-11" y="10" width="22" height="32" fill="#2980B9" rx="4"/>
-        <rect x="-9" y="38" width="8" height="26" fill="#34495E" rx="3"/>
-        <rect x="1" y="38" width="8" height="26" fill="#34495E" rx="3"/>
-        <ellipse cx="-5" cy="65" rx="6" ry="3.5" fill="#1A5276"/>
-        <ellipse cx="5" cy="65" rx="6" ry="3.5" fill="#1A5276"/>
-        <circle cx="0" cy="4" r="12" fill="#FDBCB4"/>
-        <path d="M-11 3 Q-12 -7 0 -7 Q12 -7 11 3" fill="#1A1A1A"/>
-      </g>
-      <!-- Person 3 - girl in green (left side) -->
-      <g transform="translate(55,315)">
-        <rect x="-9" y="8" width="18" height="26" fill="#27AE60" rx="3"/>
-        <rect x="-7" y="30" width="6" height="22" fill="#8E44AD" rx="2"/>
-        <rect x="1" y="30" width="6" height="22" fill="#8E44AD" rx="2"/>
-        <ellipse cx="-4" cy="53" rx="5" ry="3" fill="#6C3483"/>
-        <ellipse cx="4" cy="53" rx="5" ry="3" fill="#6C3483"/>
-        <circle cx="0" cy="3" r="11" fill="#FDBCB4"/>
-        <path d="M-10 2 Q-10 -7 0 -7 Q10 -7 10 2" fill="#8B4513"/>
-      </g>
-      <!-- Bike (decorative, right) -->
-      <g transform="translate(315,330)" stroke="#555" stroke-width="2" fill="none">
-        <circle cx="-18" cy="12" r="16"/>
-        <circle cx="18" cy="12" r="16"/>
-        <circle cx="-18" cy="12" r="3" fill="#555"/>
-        <circle cx="18" cy="12" r="3" fill="#555"/>
-        <path d="M-18 12 L0 -2 L18 12"/>
-        <path d="M-4 -2 L4 -2"/>
-        <path d="M0 -12 L0 -2"/>
-        <path d="M-3 -14 L3 -14"/>
-      </g>
-    </svg>
+  <div class="illus-wrap" style="background:#E8F5EE;display:flex;flex-direction:column;justify-content:flex-end">
+    <svg width="372" height="279" viewBox="0 0 372 279" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+<path d="M100.44 144.052L105.352 255.75L308.681 137.662L294.94 116.822L127.91 213.273L126.901 142.616L100.44 144.052Z" fill="#209D5E"/>
+<path d="M236.385 96.4724C236.385 96.4724 227.344 83.4619 224.934 79.2945C222.523 75.127 220.5 70.4498 224.594 68.3878C228.689 66.3249 233.345 70.1739 236.587 76.8405C239.829 83.5071 244.194 91.8202 244.194 91.8202C244.194 91.8202 242.215 81.7125 240.587 73.478C238.959 65.2434 239.191 60.1716 244.586 59.8991C250.318 59.6099 250.963 67.2418 251.592 72.4892C252.22 77.7365 252.85 92.269 252.85 92.269L236.385 96.4716V96.4724Z" fill="#F4905D"/>
+<path d="M223.806 154.319C223.806 154.319 229.759 152.417 238.195 146.472C244.876 141.764 250.895 136.828 251.951 127.155C252.416 122.898 247.514 119.098 243.729 117.608C239.04 115.764 233.599 115.784 230.94 108.286C226.316 95.2475 250.117 88.2241 254.996 91.2439C259.875 94.2646 257.406 98.2122 251.931 102.137C259.281 101.841 262.406 97.3731 262.406 97.3731C262.406 97.3731 263.359 109.019 263.839 115.363C264.312 121.616 268 140.067 249.343 156.106C230.687 172.145 216.463 174.833 216.463 174.833L223.805 154.318L223.806 154.319Z" fill="#F59F6F"/>
+<path d="M168.95 151.193L168.842 159.842C168.827 161.027 168.523 163.743 167.077 164.265L163.654 165.138C163.654 165.138 160.344 183.239 176.388 180.328C192.432 177.418 191.582 164.759 191.582 164.759C191.582 164.759 182.402 165.364 181.071 162.623C179.739 159.882 180.273 152.189 182.483 148.411C184.694 144.635 170.001 146.49 170.001 146.49L168.951 151.192L168.95 151.193Z" fill="#F59F6F"/>
+<path d="M142.774 93.5083C142.774 93.5083 136.729 88.9196 132.637 92.6933C128.545 96.4671 131.354 105.548 142.741 101.297C154.128 97.0463 142.774 93.5083 142.774 93.5083Z" fill="#F59F6F"/>
+<path d="M181.196 24.27C181.196 24.27 182.779 19.744 185.278 20.4561C187.777 21.1683 185.833 25.93 185.833 25.93L181.196 24.27Z" fill="#D82937"/>
+<path d="M197.837 75.3859C197.837 75.3859 201.023 68.7528 206.423 70.1026C211.823 71.4533 213.711 80.7695 201.679 82.4971C189.647 84.2239 197.837 75.3859 197.837 75.3859H197.837Z" fill="#F59F6F"/>
+<path d="M167.381 51.6436C167.381 51.6436 138.799 49.2239 142.007 89.6403C145.215 130.057 150.857 144.731 172.897 141.949C194.937 139.166 208.592 127.325 200.909 85.5055C194.212 49.0601 167.381 51.6436 167.381 51.6436Z" fill="#F59F6F"/>
+<path d="M142.404 94.3612C142.404 94.3612 149.753 117.704 166.099 108.795C195.363 92.8458 198.141 75.1396 198.141 75.1396C198.141 75.1396 208.918 103.447 200.605 129.056C193.612 150.598 169.29 153.995 157.461 149.431C145.631 144.867 141.695 137.909 142.403 94.3604L142.404 94.3612Z" fill="#6A3601"/>
+<path d="M145.463 95.8279C145.463 95.8279 139.081 92.8758 138.315 92.0441C137.549 91.2125 137.268 89.7841 138.172 89C139.077 88.216 141.852 87.2732 141.852 87.2732C141.852 87.2732 145.406 80.8332 151.893 78.7035C156.745 77.1104 162.475 78.7846 165.056 79.729C165.807 80.004 166.642 79.643 166.957 78.9074C168.164 76.0982 171.634 69.8412 179.038 68.3768C188.664 66.4728 195.507 71.1066 195.507 71.1066C195.507 71.1066 198.457 71.0038 199.193 72.0795C200.272 73.6593 199.061 75.0885 192.16 78.9308C189.804 80.2422 170.703 70.733 170.875 80.4311C170.907 82.2541 168.651 82.5098 167.672 82.8517C167.05 83.069 166.254 83.3732 165.54 83.6566C165.068 83.8438 164.502 83.7159 163.991 83.1693C159.271 78.1192 145.463 95.8279 145.463 95.8279Z" fill="#D82937"/>
+<path d="M155.319 123.685C155.319 123.685 171.605 114.867 179.382 108.406C187.16 101.944 197.05 92.4146 197.05 92.4146L197.81 93.3264C197.81 93.3264 184.761 105.957 180.313 109.368C175.864 112.78 167.009 118.937 155.565 124.649C155.488 124.142 155.319 123.685 155.319 123.685Z" fill="#170700"/>
+<path d="M155.861 80.7854C155.861 80.7854 145.896 81.5653 144.959 91.4548C144.296 98.4423 151.246 108.966 161.287 104.666C171.327 100.365 167.573 87.4353 165.541 83.6573C164.858 82.3885 161.813 80.3717 155.862 80.7854H155.861Z" fill="#FFD2D2"/>
+<path d="M163.124 95.5886C163.124 95.5886 161.54 96.1469 160.939 94.1736C160.338 92.2002 160.398 89.5013 162.438 88.9622C164.479 88.4222 164.841 91.931 164.88 92.8463C164.918 93.7615 164.653 95.1682 163.124 95.5894V95.5886Z" fill="black"/>
+<path d="M168.306 88.8911C168.306 88.8911 164.064 94.5555 161.872 98.0376C159.681 101.52 160.328 103.487 160.806 104.076C161.286 104.665 162.802 105.084 166.124 102.952C169.446 100.821 173.825 97.7718 173.825 97.7718L168.306 88.8911Z" fill="#F59F6F"/>
+<path d="M168.304 87.8333C168.304 87.8333 157.142 99.7087 159.848 103.916C162.555 108.123 170.647 102.897 170.647 102.897L169.813 101.28C169.813 101.28 163.284 106.08 161.301 103.058C159.318 100.036 168.764 89.6353 168.764 89.6353L168.304 87.8333H168.304Z" fill="#EB5859"/>
+<path d="M140.446 91.6801C141.074 91.6801 141.584 91.1708 141.584 90.5426C141.584 89.9143 141.074 89.405 140.446 89.405C139.818 89.405 139.309 89.9143 139.309 90.5426C139.309 91.1708 139.818 91.6801 140.446 91.6801Z" fill="#FFA930"/>
+<path d="M197.385 74.26C198.013 74.26 198.522 73.7507 198.522 73.1224C198.522 72.4942 198.013 71.9849 197.385 71.9849C196.756 71.9849 196.247 72.4942 196.247 73.1224C196.247 73.7507 196.756 74.26 197.385 74.26Z" fill="#FFA930"/>
+<path d="M190.752 56.4229L166.8 48.002C166.8 48.002 147.786 52.8556 147.577 52.9091C147.369 52.9626 143.411 63.5308 143.411 63.5308C143.411 63.5308 139.668 74.2394 139.868 82.9203C139.868 82.9203 140.107 89.1414 143.992 87.0435C147.877 84.9455 161.108 60.6723 161.108 60.6723C161.108 60.6723 162.624 70.6337 167.376 70.6846C172.129 70.7356 182.129 58.2291 182.129 58.2291C182.129 58.2291 185.037 71.1937 196.48 71.1352" fill="#6A3601"/>
+<path d="M167.38 51.6439C167.38 51.6439 185.116 51.3497 194.568 66.6872C194.568 66.6872 206.273 29.5731 182.075 23.9011C157.877 18.2292 147.577 52.9069 147.577 52.9069L167.38 51.6431V51.6439Z" fill="#B5E1C3"/>
+<path d="M147.577 52.9094L162.82 51.9365C163.407 48.1678 164.628 42.5819 167.163 36.0432C169.422 30.2159 174.708 26.1312 179.603 23.4565C157.173 20.6013 147.577 52.9094 147.577 52.9094Z" fill="#82CB9C"/>
+<path d="M177.264 72.0339C177.264 72.0339 186.384 67.9417 191.947 76.1721C195.878 81.987 194.823 94.5545 183.95 95.5926C173.077 96.6307 169.739 86.3943 169.826 82.1048C169.929 77.0665 171.845 74.523 177.265 72.0339H177.264Z" fill="#FFD2D2"/>
+<path d="M179.028 90.8816C179.028 90.8816 177.721 91.9381 176.494 90.2807C175.267 88.6224 174.42 86.0597 176.161 84.8679C177.902 83.676 179.42 86.8596 179.762 87.7097C180.105 88.5597 180.326 89.9731 179.028 90.8816Z" fill="black"/>
+<path d="M170.212 100.335C170.212 100.335 163.994 104.291 160.247 106.789C156.5 109.286 155.316 112.076 156.412 114.048C157.508 116.02 161.79 114.69 172.171 108.011C182.552 101.332 187.958 96.5158 185.632 93.4366C183.306 90.3574 170.212 100.335 170.212 100.335V100.335Z" fill="#170700"/>
+<path d="M140.874 73.108C140.874 73.108 113.882 71.1722 117.196 58.1609C120.51 45.1496 167.38 51.6464 167.38 51.6464C167.38 51.6464 144.432 53.7126 140.873 73.108H140.874Z" fill="#006834"/>
+<path d="M163.654 165.136C163.654 165.136 163.852 173.613 173.704 172.756C183.558 171.9 188.809 164.808 188.809 164.808C188.809 164.808 193.943 164.207 197.366 163.175C200.789 162.143 223.806 154.318 223.806 154.318L227.179 173.101C227.179 173.101 207.434 179.511 196.183 181.856C184.933 184.201 135.994 185.793 135.994 185.793L135.566 176.559C135.566 176.559 149.069 170.089 163.653 165.136H163.654Z" fill="#2888FF"/>
+<path d="M105.352 255.75L308.681 137.662L294.94 116.822L127.91 213.273" fill="#209D5E"/>
+<path d="M135.567 176.561C135.567 176.561 113.195 185.329 113.616 202.04C113.721 206.2 113.809 217.084 136.9 211.61C159.99 206.134 185.156 188.279 194.537 188.349C204.765 188.424 211.465 187.82 213.081 191.673C214.696 195.526 210.515 205.757 215.598 205.249C220.682 204.741 221.232 195.753 220.768 192.08C221.462 200.83 221.763 203.3 224.967 202.907C228.171 202.513 226.837 190.057 226.837 190.057C226.837 190.057 227.601 196.261 230.805 195.364C234.777 194.252 231.762 185.482 229.126 180.626C227.2 177.077 218.435 173.04 211.844 175.693C205.254 178.346 205.661 178.085 198.826 177.302C191.99 176.518 163.905 178.519 136.057 185.786C135.833 182.24 135.567 176.563 135.567 176.563V176.561Z" fill="#F59F6F"/>
+<path d="M136.058 185.783C136.058 185.783 129.928 187.505 126.495 188.909L126.28 188.068C126.28 188.068 131.065 186.179 136.003 184.89L136.058 185.783Z" fill="#EB5859"/>
+<path d="M187.598 190.041L189.168 175.668L194.938 176.196L193.781 188.376L187.598 190.041Z" fill="#170700"/>
+<path d="M184.918 177.594C184.918 177.594 185.154 174.328 186.923 174.034C188.691 173.741 197.149 173.106 198.748 173.592C200.347 174.079 200.182 177.457 200.182 177.457L184.918 177.593V177.594Z" fill="white"/>
+<path d="M251.252 102.553C251.252 102.553 243.359 106.306 240.319 107.187L240.596 108.275C240.596 108.275 248.07 105.603 251.328 103.811C254.587 102.018 251.252 102.553 251.252 102.553Z" fill="#EB5859"/>
+<path d="M260.204 89.6692C260.204 89.6692 251.593 88.4314 251.273 96.9259C250.953 105.42 251.649 110.93 255.575 110.995C259.501 111.059 263.862 103.392 263.687 95.8928C263.544 89.7645 260.203 89.6692 260.203 89.6692H260.204Z" fill="#F4905D"/>
+<path d="M254.234 90.9023C254.234 90.9023 256.788 91.6588 257.25 94.9118C257.712 98.164 255.701 100.365 251.252 102.553C246.804 104.741 240.319 107.187 240.319 107.187C240.319 107.187 241.713 94.4287 254.234 90.9032V90.9023Z" fill="#F59F6F"/>
+<path d="M214.367 183.401C214.367 183.401 221.058 185.827 220.879 193.463C221.387 193.418 221.765 193.349 221.765 193.349C221.765 193.349 222.042 191.951 220.919 188.694C220.009 186.056 218.013 184.222 214.735 182.677C214.526 183.089 214.368 183.402 214.368 183.402L214.367 183.401Z" fill="#EB5859"/>
+<path d="M220.522 179.569C220.522 179.569 227.028 182.609 226.85 190.245C227.357 190.201 227.735 190.132 227.735 190.132C227.735 190.132 228.024 188.467 226.9 185.21C225.99 182.573 224.168 180.389 220.891 178.845C220.682 179.257 220.523 179.569 220.523 179.569L220.522 179.569Z" fill="#EB5859"/>
+</svg>
   </div>
   <!-- Text & buttons -->
-  <div class="welcome-body">
+  <div class="welcome-body" style="text-align:center">
     <div class="welcome-h">¡Hola!</div>
     <div class="welcome-p">Con Kueski, compra en quincenas o pide un préstamo con la seguridad que mereces.</div>
   </div>
@@ -474,82 +368,62 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   <div class="nb nb-and"><span></span></div>
 </div>
 
-<!-- ══════════ SCREEN 1: METHOD SELECTION BOTTOM SHEET ══════════ -->
-<div class="screen" id="s1" style="transform:translateX(100%)">
-  <div class="sb-and">
-    <span class="t">9:30</span>
-    <div class="si">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="#141c22" stroke-width="2" stroke-linecap="round"/></svg>
-      <svg viewBox="0 0 24 24" fill="#141c22"><rect x="2" y="16" width="3" height="6" rx="1"/><rect x="7" y="11" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="16" rx="1"/><rect x="17" y="2" width="3" height="20" rx="1"/></svg>
-      <svg viewBox="0 0 24 24" fill="none" stroke="#141c22" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M20 11h2v3h-2z" stroke-width="1.5"/><rect x="4" y="9" width="12" height="7" rx="1" fill="#141c22" stroke="none"/></svg>
-    </div>
-  </div>
-  <!-- Dimmed illustration background -->
-  <div style="flex:1;overflow:hidden;position:relative">
-    <div style="position:absolute;inset:0;opacity:0.18;pointer-events:none">
-      <svg viewBox="0 0 366 480" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
-        <rect width="366" height="480" fill="#B8D8F0"/>
-        <rect x="-5" y="140" width="85" height="340" fill="#D4735A"/>
-        <rect x="90" y="115" width="110" height="365" fill="#F5C842"/>
-        <rect x="215" y="155" width="160" height="325" fill="#4AADBE"/>
-        <rect x="0" y="340" width="366" height="140" fill="#C8904A"/>
-        <circle cx="300" cy="80" r="38" fill="#F9C74F" opacity="0.85"/>
-      </svg>
-    </div>
-    <div class="sheet-scrim" style="background:rgba(0,0,0,0.28)"></div>
-  </div>
-  <!-- Bottom sheet -->
-  <div class="bottom-sheet" style="padding-bottom:0">
-    <div class="bs-handle"></div>
+<!-- ══════════ SCREEN 1: METHOD SELECTION BOTTOM SHEET (overlay) ══════════ -->
+<div class="screen" id="s1" style="transform:translateX(0%)">
+  <!-- Scrim (fades in over s0) -->
+  <div id="scrim-s1"></div>
+  <!-- Bottom sheet (slides up) -->
+  <div id="bs-s1">
+    <div class="bs-handle" style="width:36px;height:4px;background:#d1d8e0;border-radius:4px;margin:14px auto 0"></div>
     <!-- Logo + close -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px 4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 6px">
       <div class="kueski-logo" id="kl-s1"></div>
-      <button class="close-btn" onclick="goToStep(0)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <button class="close-btn" onclick="goToStep(0)" style="width:32px;height:32px;border-radius:50%;background:#f0f4f8;display:grid;place-items:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#384550" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <!-- Title -->
-    <div style="padding:10px 20px 18px">
-      <p style="font-size:26px;font-weight:800;color:#141c22;letter-spacing:-0.025em;line-height:1.15">Qué bueno que estés por aquí</p>
-      <p style="font-size:15px;color:#66727d;margin-top:6px;line-height:1.45">Elige cómo quieres crear tu cuenta.</p>
+    <div style="padding:10px 20px 4px">
+      <p style="font-size:26px;font-weight:800;color:#141c22;letter-spacing:-0.025em;line-height:1.15">Qué bueno que estés<br>por aquí</p>
+      <p style="font-size:15px;color:#66727d;margin-top:8px;line-height:1.45">Elige cómo quieres crear tu cuenta.</p>
     </div>
     <!-- Method buttons -->
-    <div style="display:flex;flex-direction:column;gap:10px;padding:0 20px 16px">
+    <div style="display:flex;flex-direction:column;gap:10px;padding:18px 20px 10px">
       <!-- Passkey (primary) -->
-      <button class="method-btn primary" onclick="goToStep(2)">
-        <div class="mb-icon">
-          <!-- Person+key passkey icon — white on blue bg -->
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <button class="method-btn primary" onclick="goToStep(2)" style="border-radius:16px;padding:14px 16px;gap:14px">
+        <div class="mb-icon" style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,0.22);flex-shrink:0;display:grid;place-items:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="9" cy="7" r="3.5" stroke="#fff" stroke-width="1.8"/>
             <path d="M2 20c0-3.87 3.13-7 7-7" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
             <circle cx="18.5" cy="16.5" r="2.8" stroke="#fff" stroke-width="1.8"/>
             <path d="M20.8 14.2L23 12" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M21.9 13.1L23.2 14.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M22 13.1L23.2 14.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
             <line x1="18.5" y1="19.3" x2="18.5" y2="21.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </div>
-        <div class="mb-text">
-          <div class="mb-lbl">Llave de acceso</div>
-          <div class="mb-sub">Más rápido · Sin contraseña</div>
+        <div class="mb-text" style="flex:1;text-align:left">
+          <div class="mb-lbl" style="font-size:16px;font-weight:700;color:#fff">Llave de acceso</div>
+          <div class="mb-sub" style="font-size:12px;color:rgba(255,255,255,0.78);margin-top:2px">Más rápido · Sin contraseña</div>
         </div>
       </button>
       <!-- Email (secondary) -->
-      <button class="method-btn">
-        <div class="mb-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#384550" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+      <button class="method-btn" style="border-radius:16px;padding:14px 16px;gap:14px">
+        <div class="mb-icon" style="width:44px;height:44px;border-radius:12px;background:#f0f4f8;flex-shrink:0;display:grid;place-items:center">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#384550" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
         </div>
-        <div class="mb-text">
-          <div class="mb-lbl">Correo electrónico</div>
-          <div class="mb-sub">Registra con tu correo</div>
+        <div class="mb-text" style="flex:1;text-align:left">
+          <div class="mb-lbl" style="font-size:16px;font-weight:700;color:#141c22">Correo electrónico</div>
+          <div class="mb-sub" style="font-size:12px;color:#66727d;margin-top:2px">Registra con tu correo</div>
         </div>
       </button>
     </div>
     <!-- Footer -->
-    <div style="padding:4px 20px 20px;text-align:center;font-size:14px;color:#66727d">
+    <div style="padding:6px 20px 24px;text-align:center;font-size:14px;color:#66727d">
       ¿Ya tienes cuenta? <a href="#" style="color:#0069f1;font-weight:700;text-decoration:none">Inicia sesión</a>
     </div>
   </div>
-  <div class="nb nb-and"><span></span></div>
+  <!-- Nav bar -->
+  <div id="nb-s1"><span></span></div>
 </div>
 
 <!-- ══════════ SCREEN 2: PASSKEY UPSELL (FULL SCREEN) ══════════ -->
@@ -735,26 +609,85 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 <script>
 /* ── Kueski logo SVG ── */
-const KLOGO = `<svg height="26" viewBox="0 0 82 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M2 0h5v7.8L14.5 0H21L13.5 8l7.5 8h-6.5L8 10.5V16H2V0Z" fill="#141c22"/>
-  <text x="24" y="15" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="15" font-weight="700" fill="#141c22" letter-spacing="-0.3">kueski.</text>
+const KLOGO = `<svg height="28" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pot base -->
+  <rect x="1" y="16" width="22" height="10" rx="3.5" fill="#0069f1"/>
+  <!-- Inner ledge -->
+  <rect x="4" y="14" width="16" height="6" rx="2.5" fill="#4AADFF"/>
+  <!-- Stem -->
+  <line x1="13" y1="14" x2="13" y2="7" stroke="#008246" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- Left leaf -->
+  <path d="M13 11C11 9 7 9 7 11C9 11 12 12 13 11Z" fill="#008246"/>
+  <!-- Right leaf -->
+  <path d="M13 8.5C15 6 19 7 18.5 9C16.5 9 14 8.5 13 8.5Z" fill="#00A950"/>
+  <!-- kueski. wordmark -->
+  <text x="30" y="21" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="18" font-weight="800" fill="#0069f1" letter-spacing="-0.5">kueski.</text>
+  <text x="108" y="13" font-family="-apple-system,sans-serif" font-size="7" fill="#0069f1">®</text>
 </svg>`;
 
 document.getElementById('kl-s1').innerHTML = KLOGO;
 
-/* ── Navigation ── */
+/* ── Navigation ──────────────────────────────────────────────────────────────
+   s0 and s1 share the same horizontal slot (step 0).
+   s1's bottom sheet slides in VERTICALLY over s0.
+   s2-s4 slide HORIZONTALLY as normal.
+   Virtual slots: s0/s1 = 0, s2 = 1, s3 = 2, s4 = 3
+──────────────────────────────────────────────────────────────────────────── */
 var currentStep = 0;
-var SCREENS = ['s0','s1','s2','s3','s4'];
+var HORIZ = ['s0', 's2', 's3', 's4'];  // screens that move horizontally
+
+function virtualSlot(step) {
+  // map real step → virtual horizontal slot (s1 collapses into slot 0)
+  return step <= 1 ? 0 : step - 1;
+}
+
+function doHorizSlide(step) {
+  var vSlot = virtualSlot(step);
+  var vPos  = {'s0': 0, 's2': 1, 's3': 2, 's4': 3};
+  HORIZ.forEach(function(id) {
+    var el = document.getElementById(id);
+    el.style.transition = 'transform 380ms cubic-bezier(0.4,0,0.2,1)';
+    el.style.transform = 'translateX(' + ((vPos[id] - vSlot) * 100) + '%)';
+  });
+}
+
+function showSheet() {
+  document.getElementById('scrim-s1').classList.add('bs-active');
+  document.getElementById('bs-s1').classList.add('bs-active');
+}
+
+function hideSheet(cb) {
+  document.getElementById('scrim-s1').classList.remove('bs-active');
+  document.getElementById('bs-s1').classList.remove('bs-active');
+  if (cb) setTimeout(cb, 350);
+}
 
 function goToStep(step) {
   var prev = currentStep;
   currentStep = step;
 
-  SCREENS.forEach(function(id, idx) {
-    var el = document.getElementById(id);
-    el.style.transition = 'transform 380ms cubic-bezier(0.4,0,0.2,1)';
-    el.style.transform = 'translateX(' + ((idx - step) * 100) + '%)';
-  });
+  if (prev === 0 && step === 1) {
+    // Welcome → sheet: slide sheet up (no horizontal change)
+    showSheet();
+  } else if (prev === 1 && step === 0) {
+    // Sheet → Welcome: slide sheet down
+    hideSheet();
+  } else if (prev <= 1 && step >= 2) {
+    // Sheet → forward flow: collapse sheet + horizontal slide simultaneously
+    hideSheet();
+    doHorizSlide(step);
+  } else if (prev >= 2 && step === 1) {
+    // Forward screen → back to sheet: slide back + show sheet after
+    doHorizSlide(step);
+    setTimeout(showSheet, 300);
+  } else if (prev >= 2 && step === 0) {
+    // Forward screen → all the way back to welcome
+    hideSheet();
+    doHorizSlide(step);
+  } else {
+    // Standard forward/backward between s2/s3/s4
+    doHorizSlide(step);
+  }
 
   updateSidebar();
 }
